@@ -58,44 +58,78 @@ Completely wrap the Bank of Canada Valet API into a user-friendly R package, ena
 
 ## IV. Package Design & Architecture
 
-### 4.1 Current Status (Implemented)
+### 4.1 Core API Functions (Data Fetching)
 
+**Primary Functions for Data Acquisition**:
 ```r
-# 2 core functions
-✅ boc_series()     # Fetch single/multiple time series data
-✅ boc_plot()       # Plot time series chart
-✅ boc_request()    # Internal API request function
-```
-
-**Existing Features**:
-- Support for querying multiple series simultaneously
-- Support for date range filtering (start_date, end_date)
-- Basic time series line plot generation
-- Returns clean tibble format data
-
-### 4.2 Phase 2 (Planned Implementation)
-
-#### Data Discovery Functions
-```r
+boc_request()        # Internal: Low-level HTTP API call wrapper
+boc_series()         # Fetch single/multiple time series data
 boc_list()           # List all available series/groups
-boc_series_info()    # Fetch series metadata
+boc_series_info()    # Fetch series metadata information
+boc_group()          # Batch fetch data by group (efficient for multi-series)
 ```
 
-#### Efficient Batch Queries
+**Features**:
+- Support for querying multiple series simultaneously
+- Flexible date range filtering (start_date, end_date)
+- Returns clean tibble format data
+- Error handling and retry logic
+
+### 4.2 Visualization Functions
+
+**Plotting Tools**:
 ```r
-boc_group()          # Fetch data by group (more efficient than individual queries)
+boc_plot()           # Basic time series line plot
+boc_plot_group()     # Multi-series comparison plots (faceting, custom themes)
 ```
 
-#### Enhanced Plotting
+**Features**:
+- Clean, publication-ready default themes
+- Customizable colors, labels, and styling
+- Support for multiple series visualization
+
+### 4.3 Data Processing & Utilities (Lightweight Analysis)
+
+**Data Wrangling Functions** - Simplify common tasks without deep domain analysis:
+
+#### 4.3.1 Normalization & Scaling
 ```r
-boc_plot_group()     # Multi-series comparison plots (with faceting, normalization, etc.)
+boc_normalize()      # Standardize values (Z-score, min-max scaling, percentage change)
+                     # Use case: Compare multiple series on same scale
 ```
 
-#### User Experience
+#### 4.3.2 Missing Data Handling
 ```r
-Caching Mechanism     # Avoid redundant API calls for identical requests
-Error Handling & Validation  # Friendly error messages, input checking, retry logic
+boc_fill_missing()   # Handle gaps in time series
+                     # Methods: last observation carried forward (locf), 
+                     #         linear interpolation, forward fill
+                     # Use case: Prepare data for time series analysis
 ```
+
+#### 4.3.3 Basic Summary & Exploration
+```r
+boc_summary()        # Quick statistical summary (mean, sd, min, max, etc.)
+boc_percent_change() # Calculate period-over-period percentage change
+boc_rolling_mean()   # Compute rolling average
+boc_autocorr()       # Check autocorrelation structure
+boc_correlation()    # Multi-series correlation matrix
+```
+
+**Design Philosophy**: These functions handle **generic data processing** tasks that 80% of users need. They integrate seamlessly with `dplyr`, `ggplot2`, and other tidyverse tools.
+
+### 4.4 Internal Utilities
+
+**Helper Functions**:
+```r
+boc_validate_date()     # Date format validation
+boc_validate_series()   # Series ID verification
+boc_cache_clear()       # Cache management
+```
+
+**Features**:
+- Caching mechanism to avoid redundant API calls
+- Friendly error messages and input validation
+- Cross-platform support
 
 ---
 
