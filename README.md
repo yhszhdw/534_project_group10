@@ -13,26 +13,53 @@ While R packages that interface with the Valet API already exist, **bocvaletR** 
 
 ## 2. Motivation and Background
 
-The Bank of Canada Valet API provides authoritative, well-maintained financial and economic datasets such as exchange rates, interest rates, and macroeconomic indicators. These data are widely used in academic research, policy analysis, and applied data science.
+### 2.1 The Bank of Canada Valet API
+
+The [Bank of Canada Valet API](https://www.bankofcanada.ca/valet/docs) is a comprehensive, RESTful web service that provides programmatic access to authoritative Canadian financial and economic time-series data maintained by the Bank of Canada. The API is designed for reliability, scalability, and public accessibility.
+
+**Key Features of the Valet API:**
+
+- **Data Coverage**: The API provides access to over 900 distinct time series, organized hierarchically into groups including:
+  - Exchange rates (CAD/USD, CAD/EUR, etc.)
+  - Interest rates (policy rates, bond yields, mortgage rates)
+  - Economic indicators (inflation, employment, GDP measures)
+  - Financial market data (equity indices, commodity prices)
+  
+- **Data Frequency**: Series are available at various frequencies (daily, weekly, monthly, quarterly, annual)
+
+- **Historical Depth**: Most series extend back several decades, enabling long-horizon macroeconomic analysis
+
+- **API Design**: The Valet API follows RESTful principles with:
+  - Multiple endpoints for different query types (series lookup, metadata retrieval, data access)
+  - JSON response format
+  - Optional filtering by date range, frequency, and observation count
+  - Rate limiting and robust error handling
+
+- **Use Cases**: The API serves economists, data scientists, finance professionals, students, and policy researchers conducting academic analysis, investment research, risk assessment, and economic forecasting
+
+### 2.2 Existing Limitations and Motivation for bocvaletR
 
 Although existing R packages (e.g., community-developed Valet API clients) already provide access to this API, they have several limitations:
 
-- They primarily focus on **basic data retrieval**, with limited support for downstream analysis workflows
-- Some API behaviors (such as date filtering for grouped series) are **inconsistent or unreliable**, requiring users to manually clean results
-- Limited tooling exists for **metadata exploration**, **series alignment**, and **workflow-level utilities**
-- Visualization, caching, and reproducibility features are minimal or absent
-- Documentation and examples tend to focus on API usage rather than applied analysis
+- **Limited Downstream Integration**: They primarily focus on **basic data retrieval**, with limited support for downstream analysis workflows and data cleaning
+- **API Edge Cases**: Some API behaviors (such as date filtering for grouped series) are **inconsistent or unreliable**, requiring users to manually clean and validate results
+- **Missing Utilities**: Limited tooling exists for **metadata exploration**, **series alignment**, **batch processing**, and **workflow-level utilities**
+- **No Visualization Support**: Visualization, caching, and reproducibility features are minimal or absent
+- **Documentation Gaps**: Documentation and examples tend to focus on API usage rather than applied economic analysis
 
-As a result, users often need to write substantial additional code for validation, transformation, plotting, and repeated API calls.
+As a result, users often need to write substantial additional code for data validation, transformation, plotting, and repeated API calls—duplicating effort and introducing potential inconsistencies.
 
-**bocvaletR** is motivated by the goal of addressing these gaps. Rather than duplicating existing functionality, the package is designed to **extend and improve upon existing Valet API wrappers** by offering:
+### 2.3 bocvaletR: Extending Rather Than Duplicating
 
-- More reliable and consistent handling of API edge cases
-- Analysis-ready outputs that integrate naturally with tidyverse workflows
-- Lightweight but high-impact utilities for common time-series tasks
-- Clear documentation and vignettes that emphasize reproducible economic analysis
+**bocvaletR** is motivated by the goal of addressing these gaps. Rather than duplicating basic API access functionality, the package is designed to **extend and improve upon existing Valet API wrappers** by offering:
 
-This approach makes the project both practically useful and well-suited as a course project demonstrating applied software engineering, API design, and data analysis principles.
+- **Robust Error Handling**: More reliable and consistent handling of API edge cases, with client-side fixes for known limitations
+- **Tidy Outputs**: Analysis-ready outputs that integrate naturally with tidyverse workflows (dplyr, ggplot2, etc.)
+- **Time-Series Utilities**: Lightweight but high-impact utilities for common time-series tasks (normalization, rolling statistics, correlation analysis)
+- **Publication-Ready Visualization**: Built-in plotting functions optimized for economic data
+- **Comprehensive Documentation**: Clear documentation and vignettes that emphasize reproducible economic analysis workflows
+
+This approach makes the project both **practically useful** for R practitioners and well-suited as a course project demonstrating applied software engineering, API design, and data analysis principles.
 
 ---
 
