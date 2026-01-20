@@ -5,38 +5,46 @@
 
 ## 1. Project Overview
 
-This project proposes the development of **bocvaletR**, an R package that provides a clean and user-friendly wrapper for the Bank of Canada Valet API. The package aims to allow R users to access official Canadian financial and economic time-series data using concise, well-documented R functions, without manually constructing HTTP requests or parsing raw JSON responses.
+This project proposes the development of **bocvaletR**, an R package that provides a modern, tidyverse-oriented wrapper for the Bank of Canada Valet API. The package is designed to allow R users to access official Canadian financial and economic time-series data through concise, well-documented functions, without manually constructing HTTP requests or parsing raw JSON responses.
 
-The target users include economists, data scientists, and finance students who rely on reproducible workflows in R for data analysis and visualization.
+While R packages that interface with the Valet API already exist, **bocvaletR** aims to go beyond basic data retrieval by focusing on **reliability, workflow integration, and analysis-ready outputs**. The target users include economists, data scientists, and finance students who rely on reproducible and efficient workflows in R for analysis and visualization.
 
 ---
 
 ## 2. Motivation and Background
 
-The Bank of Canada Valet API offers authoritative and well-maintained financial datasets, including exchange rates and economic indicators. These data are widely used in academic research and policy analysis. However:
+The Bank of Canada Valet API provides authoritative, well-maintained financial and economic datasets such as exchange rates, interest rates, and macroeconomic indicators. These data are widely used in academic research, policy analysis, and applied data science.
 
-- The API is primarily designed for direct HTTP access
-- There is no official R wrapper that integrates naturally with tidyverse workflows
-- Users must repeatedly implement request handling, parsing, and validation logic
+Although existing R packages (e.g., community-developed Valet API clients) already provide access to this API, they have several limitations:
 
-Developing an R wrapper addresses these issues by:
+- They primarily focus on **basic data retrieval**, with limited support for downstream analysis workflows
+- Some API behaviors (such as date filtering for grouped series) are **inconsistent or unreliable**, requiring users to manually clean results
+- Limited tooling exists for **metadata exploration**, **series alignment**, and **workflow-level utilities**
+- Visualization, caching, and reproducibility features are minimal or absent
+- Documentation and examples tend to focus on API usage rather than applied analysis
 
-- **Reducing technical overhead** for users
-- **Promoting reproducible** financial analysis in R
-- **Providing a reusable**, extensible package aligned with modern R package standards
+As a result, users often need to write substantial additional code for validation, transformation, plotting, and repeated API calls.
 
-The API is also well suited for a course project: it is sufficiently complex to demonstrate software engineering skills while remaining feasible within a semester.
+**bocvaletR** is motivated by the goal of addressing these gaps. Rather than duplicating existing functionality, the package is designed to **extend and improve upon existing Valet API wrappers** by offering:
+
+- More reliable and consistent handling of API edge cases
+- Analysis-ready outputs that integrate naturally with tidyverse workflows
+- Lightweight but high-impact utilities for common time-series tasks
+- Clear documentation and vignettes that emphasize reproducible economic analysis
+
+This approach makes the project both practically useful and well-suited as a course project demonstrating applied software engineering, API design, and data analysis principles.
 
 ---
 
 ## 3. Project Objectives
 
-The primary goal is to design and implement a fully functional R package that:
+The primary goal is to design and implement a fully functional R package that improves upon existing Valet API wrappers by:
 
-- Wraps the core endpoints of the Bank of Canada Valet API
-- Returns data in tidy, analysis-ready formats
-- Provides basic visualization and data processing helpers
-- Includes documentation and tests following best practices for R packages
+- Wrapping the core endpoints of the Bank of Canada Valet API
+- Providing consistent and reliable data retrieval, including client-side fixes for known API limitations
+- Returning data in tidy, analysis-ready formats by default
+- Supporting common analytical workflows through helper utilities and visualization tools
+- Following best practices for R package development, testing, and documentation
 
 ---
 
@@ -55,39 +63,39 @@ boc_series_info()   # Retrieve metadata for a series
 
 These functions will:
 
-- Support date range filtering
-- Allow multiple series to be queried at once
-- Return results as tibbles
-- Handle invalid inputs and API errors gracefully
+- Support date range filtering, including consistent client-side filtering when API behavior is unreliable
+- Allow multiple series to be queried in a single call
+- Return results as tidy tibbles with stable column names and types
+- Validate inputs and handle API errors with clear, informative messages
 
-A low-level internal function (`boc_request()`) will manage HTTP requests and response parsing.
+A low-level internal function (`boc_request()`) will manage HTTP requests, retries, and response parsing.
 
 ### 4.2 Visualization Support
 
-To support exploratory analysis, the package will include lightweight plotting helpers:
+To support exploratory and applied analysis, the package will include lightweight plotting helpers:
 
 ```r
 boc_plot()          # Single or multi-series time series plots
 boc_plot_group()    # Grouped or faceted comparisons
 ```
 
-These functions will produce publication-ready ggplot2 objects while remaining fully customizable by the user.
+These functions will return ggplot2 objects that are publication-ready by default but fully customizable by the user.
 
 ### 4.3 Basic Data Utilities
 
-Common time-series preparation tasks will be simplified through helper functions:
+To move beyond simple data access, bocvaletR will include helper functions that support common time-series workflows:
 
 ```r
 boc_normalize()        # Scaling and normalization (Z-score, percentage change)
 boc_fill_missing()     # Missing value handling (LOCF, interpolation)
 boc_summary()          # Descriptive statistics
 boc_percent_change()   # Period-over-period percentage change
-boc_rolling_mean()     # Rolling average
-boc_autocorr()         # Autocorrelation structure
-boc_correlation()      # Multi-series correlation matrix
+boc_rolling_mean()     # Rolling averages
+boc_autocorr()         # Autocorrelation analysis
+boc_correlation()      # Multi-series correlation matrices
 ```
 
-These utilities are intentionally lightweight and designed to complement existing tidyverse tools rather than replace them.
+These utilities are intentionally lightweight and designed to complement, not replace, existing tidyverse tools. Together, they distinguish bocvaletR from existing Valet API wrappers by supporting complete analysis workflows.
 
 ---
 
@@ -97,7 +105,7 @@ The package will be implemented using modern R tooling:
 
 | Component | Purpose |
 |-----------|---------|
-| **httr2** | HTTP requests |
+| **httr2** | HTTP requests and API handling |
 | **dplyr, tibble** | Data manipulation |
 | **ggplot2** | Visualization |
 | **rlang** | Structured error handling |
@@ -114,16 +122,16 @@ Documentation is a core component of the project and will include:
 ### 6.1 README
 - Installation instructions
 - Quick-start examples
-- Overview of available functions
+- Overview of key differences from existing Valet API packages
 
 ### 6.2 Function Documentation
 - Full roxygen2 documentation for all exported functions
-- Executable examples for each function
+- Executable examples demonstrating typical workflows
 
-### 6.3 Vignettes (3)
-1. **Basic Usage**: Introduction to the API wrapper with simple examples
-2. **Advanced Querying**: Batch requests, caching, and best practices
-3. **Applied Example**: A realistic economic analysis using real data
+### 6.3 Vignettes
+- **Basic Usage** – Accessing series and groups with tidy outputs
+- **Advanced Workflows** – Reliable filtering, batch queries, and caching
+- **Applied Example** – A reproducible economic analysis using real data
 
 ---
 
@@ -131,11 +139,12 @@ Documentation is a core component of the project and will include:
 
 The package will include a comprehensive test suite:
 
-- **Unit tests** for data retrieval, parsing, and validation
-- **Mocked API responses** to ensure tests are fast and stable
-- **Target coverage**: at least 80% code coverage
+- Unit tests for data retrieval, parsing, and validation
+- Mocked API responses to ensure tests are fast and reproducible
+- Explicit tests for known API edge cases (e.g., group date filtering)
+- Target coverage of at least 80%
 
-This ensures correctness, robustness, and maintainability.
+This strategy ensures correctness, robustness, and maintainability.
 
 ---
 
@@ -143,14 +152,14 @@ This ensures correctness, robustness, and maintainability.
 
 By the end of the project, the team will deliver:
 
-- A working R package that wraps the Bank of Canada Valet API
-- Clean, documented, and tested code following R package standards
-- Example analyses demonstrating real-world usage
+- A working R package that improves upon existing Bank of Canada Valet API wrappers
+- Reliable, tidy, and analysis-ready data access tools
+- Clear documentation and applied examples demonstrating real-world usage
 
-The project will demonstrate both software engineering practices and practical data analysis skills, aligning well with course learning objectives.
+The project will demonstrate strong software engineering practices while addressing a real need in the R ecosystem.
 
 ---
 
 ## 9. Conclusion
 
-The proposed bocvaletR package addresses a real gap in the R ecosystem by providing convenient access to authoritative Canadian financial data. The project balances practical relevance with technical depth and offers a clear opportunity to apply API design, testing, and documentation principles in a realistic setting.
+Although R packages for accessing the Bank of Canada Valet API already exist, they focus primarily on basic data retrieval. bocvaletR addresses this gap by emphasizing reliability, workflow integration, and analysis-ready tooling. By extending existing approaches rather than duplicating them, the project delivers practical value while remaining well-scoped for a course-based software development project.
