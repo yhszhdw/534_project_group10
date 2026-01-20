@@ -39,7 +39,7 @@ The [Bank of Canada Valet API](https://www.bankofcanada.ca/valet/docs) is a comp
 
 ### 2.2 Existing Limitations and Motivation for bocvaletR
 
-Although existing R packages (e.g., community-developed Valet API clients) already provide access to this API, they have several limitations:
+Although existing R packages (e.g., community-developed Valet API clients: https://cran.r-project.org/web/packages/valet/index.html) already provide access to this API, they have several limitations:
 
 - **Limited Downstream Integration**: They primarily focus on **basic data retrieval**, with limited support for downstream analysis workflows and data cleaning
 - **API Edge Cases**: Some API behaviors (such as date filtering for grouped series) are **inconsistent or unreliable**, requiring users to manually clean and validate results
