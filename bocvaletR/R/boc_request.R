@@ -10,8 +10,18 @@ boc_request <- function(path, query = list()) {
   url <- paste0(base_url, path)
   
   resp <- httr2::request(url) |>
+    httr2::req_timeout(30) |>
+    httr2::req_retry(max_tries = 3) |>
     httr2::req_url_query(!!!query) |>
-    httr2::req_perform()
+    httr2::req_perform() #|>
+    # httr2::resp_check_status()
   
-  httr2::resp_body_json(resp, simplifyVector = FALSE)
+  tryCatch(
+    {
+      httr2::resp_body_json(resp, simplifyVector = FALSE)
+    },
+    error = function(e) {
+      rlang::abort("Failed to parse JSON with simplifyVector=FALSE")
+    }
+  )
 }
