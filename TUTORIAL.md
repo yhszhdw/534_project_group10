@@ -27,7 +27,7 @@ List all available Bank of Canada **groups** (each group contains multiple relat
 boc_list_groups(keyword = "exchange")
 ```
 
-## `boc_groups(group, as = c("list", "series_df", "group_df"))`
+## 3.`boc_groups(group, as = c("list", "series_df", "group_df"))`
 
 Get details of **one Bank of Canada group** and the series it contains.
 
@@ -47,7 +47,7 @@ g$series$id            # series IDs inside the group
 boc_series(g$series$id)
 ```
 
-## `boc_series(series, start_date = NULL, end_date = NULL, concat = TRUE, progress = TRUE)`
+## 4.`boc_series(series, start_date = NULL, end_date = NULL, concat = TRUE, progress = TRUE)`
 
 Fetch **time series observations** for one or more Bank of Canada series IDs.
 
@@ -73,7 +73,7 @@ ids <- boc_list_series(keyword = "USDCAD", limit = 1)$id
 boc_series(ids)
 ```
 
-## `boc_fx_rss_available()`
+## 5.`boc_fx_rss_available()`
 
 List all **available FX exchange rate codes** supported by the Bank of Canada FX RSS feed.
 
@@ -95,7 +95,7 @@ codes <- boc_fx_rss_available()$item_series
 boc_fx_rss(codes)
 ```
 
-## `boc_fx_rss(series = NULL, concat = TRUE, progress = TRUE)`
+## 6.`boc_fx_rss(series = NULL, concat = TRUE, progress = TRUE)`
 
 Fetch **latest FX exchange rates** from the Bank of Canada RSS feed.
 
