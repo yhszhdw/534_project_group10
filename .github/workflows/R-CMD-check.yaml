@@ -8,22 +8,32 @@ on:
 
 jobs:
   R-CMD-check:
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     runs-on: ${{ matrix.config.os }}
-
-    defaults:
-      run:
-        working-directory: bocvaletR
 
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: ubuntu-latest,   r: 'release'}
-          - {os: windows-latest,  r: 'release'}
-          - {os: macos-latest,    r: 'release'}
+          - { os: ubuntu-latest,  r: 'release' }
+          - { os: windows-latest, r: 'release' }
+          - { os: macos-latest,   r: 'release' }
 
     steps:
       - uses: actions/checkout@v4
+
+      # ---- HARD FAIL FAST: ensure we're in the right repo layout ----
+      - name: Verify package directory
+      # run at repo root
+        shell: bash
+        run: |
+          set -e
+          echo "Repo root contents:"
+          ls -la
+          echo "Check package root: bocvaletR/DESCRIPTION"
+          test -f bocvaletR/DESCRIPTION
+          echo "Package field:"
+          grep -E '^Package:' bocvaletR/DESCRIPTION || true
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -32,11 +42,16 @@ jobs:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
 
+      # ---- Install dependencies for the package in subdir ----
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          working-directory: bocvaletR
+          # rcmdcheck is used by check-r-package
           extra-packages: any::rcmdcheck
           needs: check
 
+      # ---- Run R CMD check on the package in subdir ----
       - uses: r-lib/actions/check-r-package@v2
         with:
+          working-directory: bocvaletR
           upload-snapshots: true
