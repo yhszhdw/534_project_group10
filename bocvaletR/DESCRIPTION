@@ -13,7 +13,8 @@ Imports:
     purrr,
     rlang,
     tibble,
-    xml2
+    xml2,
+    ggplot2
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
