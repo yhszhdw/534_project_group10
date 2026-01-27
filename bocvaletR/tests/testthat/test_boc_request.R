@@ -59,7 +59,3 @@ testthat::test_that("boc_request aborts with friendly message when JSON parsing 
     }
   )
 })
-
-test_that("CI is really running tests", {
-  expect_equal(1, 2)
-})
