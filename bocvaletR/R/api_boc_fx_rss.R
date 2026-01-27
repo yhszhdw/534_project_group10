@@ -184,14 +184,21 @@ boc_fx_rss <- function(series = NULL, concat = TRUE, progress = TRUE) {
   pb <- NULL
   if (isTRUE(progress) && n > 1) {
     pb <- utils::txtProgressBar(min = 0, max = n, style = 3)
-    on.exit({ try(utils::close(pb), silent = TRUE); cat("\n") }, add = TRUE)
+    on.exit({
+      try(base::close(pb), silent = TRUE)
+      cat("\n")
+    }, add = TRUE)
   }
 
   out <- vector("list", n)
   for (i in seq_along(series)) {
     out[[i]] <- fetch_one_feed(series[[i]])
-    if (!is.null(pb)) { utils::setTxtProgressBar(pb, i); flush.console() }
+    if (!is.null(pb)) {
+      utils::setTxtProgressBar(pb, i)
+      utils::flush.console()
+    }
   }
+
   names(out) <- series
 
   if (isTRUE(concat)) return(dplyr::bind_rows(out))
