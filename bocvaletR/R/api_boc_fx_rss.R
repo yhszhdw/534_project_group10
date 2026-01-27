@@ -198,7 +198,6 @@ boc_fx_rss <- function(series = NULL, concat = TRUE, progress = TRUE) {
       utils::flush.console()
     }
   }
-
   names(out) <- series
 
   if (isTRUE(concat)) return(dplyr::bind_rows(out))
