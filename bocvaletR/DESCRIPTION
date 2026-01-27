@@ -22,5 +22,6 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     httptest2,
-    covr
+    covr,
+    mockery
 VignetteBuilder: knitr
