@@ -182,6 +182,12 @@ boc_autocorr <- function(data,
 }
 
 #' Pairwise correlation matrix across series
+#' @param data A data frame containing at least `date`, `series`, and a numeric
+#'   value column (default `"value"`).
+#' @param value_col Name of the numeric value column in `data` to use for the
+#'   correlation calculation (string).
+#'
+#' @return A numeric correlation matrix with one row/column per series.
 #' @export
 boc_correlation <- function(data, value_col = "value") {
   # reshape wide without adding new dependencies

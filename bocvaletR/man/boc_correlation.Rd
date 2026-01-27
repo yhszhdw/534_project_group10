@@ -6,6 +6,16 @@
 \usage{
 boc_correlation(data, value_col = "value")
 }
+\arguments{
+\item{data}{A data frame containing at least \code{date}, \code{series}, and a numeric
+value column (default \code{"value"}).}
+
+\item{value_col}{Name of the numeric value column in \code{data} to use for the
+correlation calculation (string).}
+}
+\value{
+A numeric correlation matrix with one row/column per series.
+}
 \description{
 Pairwise correlation matrix across series
 }

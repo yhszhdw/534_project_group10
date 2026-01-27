@@ -33,7 +33,7 @@ boc_series <- function(series,
   if (isTRUE(progress) && n > 1) {
     pb <- utils::txtProgressBar(min = 0, max = n, style = 3)
     on.exit({
-      try(utils::close(pb), silent = TRUE)
+      try(base::close(pb), silent = TRUE)
       cat("\n")
     }, add = TRUE)
   }
