@@ -18,6 +18,7 @@ testthat::test_that("boc_request returns parsed list on success (mocked)", {
   )
 })
 
+
 testthat::test_that("boc_request accepts query params without error (mocked)", {
   httr2::with_mocked_responses(
     mock = list(
@@ -57,4 +58,8 @@ testthat::test_that("boc_request aborts with friendly message when JSON parsing 
       )
     }
   )
+})
+
+test_that("CI is really running tests", {
+  expect_equal(1, 2)
 })
