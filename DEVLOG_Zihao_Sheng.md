@@ -1,0 +1,111 @@
+# Development Log — bocvaletR
+
+## Project Overview
+**Project:** bocvaletR — R wrapper for the Bank of Canada Valet API  
+**Start Date:** January 22  
+**Focus:** JSON + FX RSS data access, robustness, testing, and CI
+
+---
+
+## January 22 — Core API development
+
+### Files created
+- `R/api_boc_fx_rss.R`
+- `R/api_boc_groups.R`
+- `R/api_boc_list.R`
+- `R/api_boc_series.R`
+
+### Functions implemented
+
+#### `boc_fx_rss()`
+Fetch latest FX exchange rates from the Bank of Canada FX RSS feed (RDF/XML).
+
+```r
+boc_fx_rss()
+boc_fx_rss("FXUSDCAD")
+boc_fx_rss(c("FXUSDCAD", "FXAUDCAD"))
+```
+
+### boc_fx_rss_available()
+
+List available FX RSS series IDs with basic metadata.
+
+Example:
+    boc_fx_rss_available()
+
+---
+
+### boc_groups()
+
+Retrieve group metadata and associated series.
+
+Examples:
+    boc_groups("FX_RATES_DAILY")
+    boc_groups("FX_RATES_DAILY", as = "series_df")
+
+---
+
+### boc_list_series()
+
+List all available series metadata, with optional keyword filtering.
+
+Examples:
+    boc_list_series()
+    boc_list_series(keyword = "exchange", limit = 10)
+
+---
+
+### boc_list_groups()
+
+List all available group metadata.
+
+Examples:
+    boc_list_groups()
+    boc_list_groups(keyword = "FX")
+
+---
+
+### boc_series()
+
+Retrieve time series observations for one or more series.
+
+Examples:
+    boc_series("FXUSDCAD")
+    boc_series(c("FXUSDCAD", "FXAUDCAD"), start_date = "2020-01-01")
+
+## January 25 — Error handling and robustness
+
+Added structured error handling to all API-facing functions to improve
+stability and user experience.
+
+Key work:
+    - Introduced tryCatch-based error handling for network and parsing failures
+    - Ensured consistent return types (e.g. empty tibbles with correct columns)
+    - Safely handled missing, empty, or partially malformed API responses
+    - Reduced noisy warnings from numeric coercion and incomplete fields
+
+Outcome:
+    Core functions became more resilient to unstable endpoints and unexpected
+    API responses while maintaining predictable outputs.
+
+---
+
+## January 26 — Testing and CI setup (in progress)
+
+Implemented the first unit test suite and began continuous integration setup.
+
+Key work:
+    - Created testthat unit tests for boc_request()
+    - Used mocked HTTP responses to test success and failure paths
+    - Verified local test coverage for boc_request() (≥ 80%)
+    - Began configuring GitHub Actions workflow for automated R CMD check
+
+Current status:
+    - boc_request() tests pass locally
+    - Coverage confirmed locally
+    - GitHub Actions workflow not yet fully passing
+
+Planned next steps:
+    - Finalize and validate GitHub Actions CI workflow
+    - Extend unit tests to remaining API functions
+    - Integrate automated coverage reporting into CI
