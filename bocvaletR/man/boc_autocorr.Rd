@@ -6,6 +6,18 @@
 \usage{
 boc_autocorr(data, value_col = "value", lag_max = 10, group_col = "series")
 }
+\arguments{
+\item{data}{A data.frame/tibble containing the time series.}
+
+\item{value_col}{Name of the numeric column to compute autocorrelation on.}
+
+\item{lag_max}{Maximum lag to compute (integer).}
+
+\item{group_col}{Optional grouping column name (for multiple series).}
+}
+\value{
+...
+}
 \description{
 Autocorrelation up to a chosen lag (per series)
 }

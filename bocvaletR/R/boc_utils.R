@@ -156,6 +156,11 @@ boc_rolling_mean <- function(data,
 }
 
 #' Autocorrelation up to a chosen lag (per series)
+#' @param data A data.frame/tibble containing the time series.
+#' @param value_col Name of the numeric column to compute autocorrelation on.
+#' @param lag_max Maximum lag to compute (integer).
+#' @param group_col Optional grouping column name (for multiple series).
+#' @return ...
 #' @export
 boc_autocorr <- function(data,
                          value_col = "value",
