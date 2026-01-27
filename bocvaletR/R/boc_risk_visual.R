@@ -2,8 +2,6 @@
 # FX Risk Metrics and Visualization
 # DATA 550 – Financial Visualization Standard
 
-library(ggplot2)
-
 # ------------------------------------------------
 # 1. Core risk metrics: Historical VaR & CVaR
 # ------------------------------------------------
