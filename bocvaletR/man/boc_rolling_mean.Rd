@@ -13,6 +13,24 @@ boc_rolling_mean(
   new_col = "roll_mean"
 )
 }
+\arguments{
+\item{data}{A data.frame/tibble containing the time series.}
+
+\item{value_col}{Name of the numeric value column in \code{data} (string).}
+
+\item{window}{Integer window size for the rolling mean (>= 1). Default 5.}
+
+\item{order_col}{Name of the ordering/date column (string). Data are arranged
+by this column before computing the rolling mean (default \code{"date"}).}
+
+\item{group_col}{Name of the grouping column (string). Default \code{"series"}.}
+
+\item{new_col}{Name of the output column to create (string).}
+}
+\value{
+A tibble/data.frame with a new column \code{new_col} containing rolling means.
+}
 \description{
-Rolling mean (right-aligned)
+Compute a simple moving average (right-aligned) within each group using a
+window of size \code{window}.
 }

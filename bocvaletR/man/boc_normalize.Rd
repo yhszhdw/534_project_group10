@@ -13,7 +13,23 @@ boc_normalize(
   new_col = "normalized"
 )
 }
+\arguments{
+\item{data}{A data.frame/tibble containing the time series.}
+
+\item{value_col}{Name of the numeric value column in \code{data} (string).}
+
+\item{method}{Normalization method. One of \code{"zscore"}, \code{"minmax"}, or \code{"index"}.}
+
+\item{index_base}{Base value used when \code{method = "index"} (default 100).}
+
+\item{group_col}{Name of the grouping column (string). Default \code{"series"}.}
+
+\item{new_col}{Name of the output column to create (string).}
+}
+\value{
+A tibble/data.frame with a new column \code{new_col} containing normalized values.
+}
 \description{
-A collection of utility functions for time series data manipulation
-Normalize a series (z-score, min-max, or index-to-base)
+Normalize a numeric series (z-score, min-max, or index-to-base) within each
+group (e.g., per series).
 }

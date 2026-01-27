@@ -2,7 +2,7 @@
 % Please edit documentation in R/boc_utils.R
 \name{boc_summary}
 \alias{boc_summary}
-\title{Summary stats by series}
+\title{Summary statistics by series}
 \usage{
 boc_summary(
   data,
@@ -11,6 +11,20 @@ boc_summary(
   group_col = "series"
 )
 }
+\arguments{
+\item{data}{A data.frame/tibble containing the time series.}
+
+\item{value_col}{Name of the numeric value column in \code{data} (string).}
+
+\item{order_col}{Name of the ordering/date column in \code{data} (string), used to
+compute start/end range (default \code{"date"}).}
+
+\item{group_col}{Name of the grouping column (string). Default \code{"series"}.}
+}
+\value{
+A tibble with one row per group containing summary statistics.
+}
 \description{
-Summary stats by series
+Compute common summary statistics for each group/series, including counts,
+missingness, date range, and distributional statistics.
 }

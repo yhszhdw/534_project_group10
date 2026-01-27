@@ -2,7 +2,7 @@
 % Please edit documentation in R/boc_utils.R
 \name{boc_percent_change}
 \alias{boc_percent_change}
-\title{Percent change over k periods (arithmetic or log)}
+\title{Percent change over k periods}
 \usage{
 boc_percent_change(
   data,
@@ -14,6 +14,26 @@ boc_percent_change(
   new_col = "pct_change"
 )
 }
+\arguments{
+\item{data}{A data.frame/tibble containing the time series.}
+
+\item{value_col}{Name of the numeric value column in \code{data} (string).}
+
+\item{periods}{Integer number of periods to lag when computing change (default 1).}
+
+\item{type}{Return type. One of \code{"arithmetic"} or \code{"log"}.}
+
+\item{order_col}{Name of the ordering/date column (string). Data are arranged
+by this column before computing changes (default \code{"date"}).}
+
+\item{group_col}{Name of the grouping column (string). Default \code{"series"}.}
+
+\item{new_col}{Name of the output column to create (string).}
+}
+\value{
+A tibble/data.frame with a new column \code{new_col} containing changes.
+}
 \description{
-Percent change over k periods (arithmetic or log)
+Compute percent change over \code{periods} within each group, using either
+arithmetic returns or log returns.
 }

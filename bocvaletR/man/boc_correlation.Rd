@@ -17,5 +17,6 @@ correlation calculation (string).}
 A numeric correlation matrix with one row/column per series.
 }
 \description{
-Pairwise correlation matrix across series
+Compute a correlation matrix between multiple series after reshaping the data
+wide by \code{date}.
 }

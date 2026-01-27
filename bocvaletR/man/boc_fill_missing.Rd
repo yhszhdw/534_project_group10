@@ -2,7 +2,7 @@
 % Please edit documentation in R/boc_utils.R
 \name{boc_fill_missing}
 \alias{boc_fill_missing}
-\title{Fill missing values (LOCF, NOCB, or linear interpolation)}
+\title{Fill missing values}
 \usage{
 boc_fill_missing(
   data,
@@ -13,6 +13,25 @@ boc_fill_missing(
   new_col = "filled"
 )
 }
+\arguments{
+\item{data}{A data.frame/tibble containing the time series.}
+
+\item{value_col}{Name of the numeric value column in \code{data} (string).}
+
+\item{method}{Filling method. One of \code{"locf"}, \code{"nocb"}, or \code{"linear"}.}
+
+\item{order_col}{Name of the ordering column (string), typically \code{"date"}.
+Data are arranged by this column before filling.}
+
+\item{group_col}{Name of the grouping column (string). Default \code{"series"}.}
+
+\item{new_col}{Name of the output column to create (string).}
+}
+\value{
+A tibble/data.frame with a new column \code{new_col} containing filled values.
+}
 \description{
-Fill missing values (LOCF, NOCB, or linear interpolation)
+Fill missing values within each group using one of: LOCF (last observation
+carried forward), NOCB (next observation carried backward), or linear
+interpolation.
 }

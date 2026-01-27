@@ -9,15 +9,15 @@ boc_autocorr(data, value_col = "value", lag_max = 10, group_col = "series")
 \arguments{
 \item{data}{A data.frame/tibble containing the time series.}
 
-\item{value_col}{Name of the numeric column to compute autocorrelation on.}
+\item{value_col}{Name of the numeric value column to compute autocorrelation on (string).}
 
 \item{lag_max}{Maximum lag to compute (integer).}
 
-\item{group_col}{Optional grouping column name (for multiple series).}
+\item{group_col}{Name of the grouping column (string). Default \code{"series"}.}
 }
 \value{
-...
+A tibble with columns \code{lag} and \code{acf} for each group/series.
 }
 \description{
-Autocorrelation up to a chosen lag (per series)
+Compute autocorrelation values up to \code{lag_max} within each group/series.
 }

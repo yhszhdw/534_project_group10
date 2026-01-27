@@ -33,9 +33,19 @@ roll_mean <- function(x, k) {
   as.numeric(stats::filter(x, rep(1 / k, k), sides = 1))
 }
 
-#' @title Time Series Utility Functions
-#' @description A collection of utility functions for time series data manipulation
-#' Normalize a series (z-score, min-max, or index-to-base)
+#' Time Series Utility Functions
+#'
+#' Normalize a numeric series (z-score, min-max, or index-to-base) within each
+#' group (e.g., per series).
+#'
+#' @param data A data.frame/tibble containing the time series.
+#' @param value_col Name of the numeric value column in `data` (string).
+#' @param method Normalization method. One of `"zscore"`, `"minmax"`, or `"index"`.
+#' @param index_base Base value used when `method = "index"` (default 100).
+#' @param group_col Name of the grouping column (string). Default `"series"`.
+#' @param new_col Name of the output column to create (string).
+#'
+#' @return A tibble/data.frame with a new column `new_col` containing normalized values.
 #' @export
 boc_normalize <- function(data,
                           value_col = "value",
@@ -65,7 +75,21 @@ boc_normalize <- function(data,
     dplyr::ungroup()
 }
 
-#' Fill missing values (LOCF, NOCB, or linear interpolation)
+#' Fill missing values
+#'
+#' Fill missing values within each group using one of: LOCF (last observation
+#' carried forward), NOCB (next observation carried backward), or linear
+#' interpolation.
+#'
+#' @param data A data.frame/tibble containing the time series.
+#' @param value_col Name of the numeric value column in `data` (string).
+#' @param method Filling method. One of `"locf"`, `"nocb"`, or `"linear"`.
+#' @param order_col Name of the ordering column (string), typically `"date"`.
+#'   Data are arranged by this column before filling.
+#' @param group_col Name of the grouping column (string). Default `"series"`.
+#' @param new_col Name of the output column to create (string).
+#'
+#' @return A tibble/data.frame with a new column `new_col` containing filled values.
 #' @export
 boc_fill_missing <- function(data,
                              value_col = "value",
@@ -87,7 +111,18 @@ boc_fill_missing <- function(data,
     dplyr::ungroup()
 }
 
-#' Summary stats by series
+#' Summary statistics by series
+#'
+#' Compute common summary statistics for each group/series, including counts,
+#' missingness, date range, and distributional statistics.
+#'
+#' @param data A data.frame/tibble containing the time series.
+#' @param value_col Name of the numeric value column in `data` (string).
+#' @param order_col Name of the ordering/date column in `data` (string), used to
+#'   compute start/end range (default `"date"`).
+#' @param group_col Name of the grouping column (string). Default `"series"`.
+#'
+#' @return A tibble with one row per group containing summary statistics.
 #' @export
 boc_summary <- function(data,
                         value_col = "value",
@@ -111,7 +146,21 @@ boc_summary <- function(data,
     )
 }
 
-#' Percent change over k periods (arithmetic or log)
+#' Percent change over k periods
+#'
+#' Compute percent change over `periods` within each group, using either
+#' arithmetic returns or log returns.
+#'
+#' @param data A data.frame/tibble containing the time series.
+#' @param value_col Name of the numeric value column in `data` (string).
+#' @param periods Integer number of periods to lag when computing change (default 1).
+#' @param type Return type. One of `"arithmetic"` or `"log"`.
+#' @param order_col Name of the ordering/date column (string). Data are arranged
+#'   by this column before computing changes (default `"date"`).
+#' @param group_col Name of the grouping column (string). Default `"series"`.
+#' @param new_col Name of the output column to create (string).
+#'
+#' @return A tibble/data.frame with a new column `new_col` containing changes.
 #' @export
 boc_percent_change <- function(data,
                                value_col = "value",
@@ -138,6 +187,19 @@ boc_percent_change <- function(data,
 }
 
 #' Rolling mean (right-aligned)
+#'
+#' Compute a simple moving average (right-aligned) within each group using a
+#' window of size `window`.
+#'
+#' @param data A data.frame/tibble containing the time series.
+#' @param value_col Name of the numeric value column in `data` (string).
+#' @param window Integer window size for the rolling mean (>= 1). Default 5.
+#' @param order_col Name of the ordering/date column (string). Data are arranged
+#'   by this column before computing the rolling mean (default `"date"`).
+#' @param group_col Name of the grouping column (string). Default `"series"`.
+#' @param new_col Name of the output column to create (string).
+#'
+#' @return A tibble/data.frame with a new column `new_col` containing rolling means.
 #' @export
 boc_rolling_mean <- function(data,
                              value_col = "value",
@@ -156,11 +218,15 @@ boc_rolling_mean <- function(data,
 }
 
 #' Autocorrelation up to a chosen lag (per series)
+#'
+#' Compute autocorrelation values up to `lag_max` within each group/series.
+#'
 #' @param data A data.frame/tibble containing the time series.
-#' @param value_col Name of the numeric column to compute autocorrelation on.
+#' @param value_col Name of the numeric value column to compute autocorrelation on (string).
 #' @param lag_max Maximum lag to compute (integer).
-#' @param group_col Optional grouping column name (for multiple series).
-#' @return ...
+#' @param group_col Name of the grouping column (string). Default `"series"`.
+#'
+#' @return A tibble with columns `lag` and `acf` for each group/series.
 #' @export
 boc_autocorr <- function(data,
                          value_col = "value",
@@ -182,6 +248,10 @@ boc_autocorr <- function(data,
 }
 
 #' Pairwise correlation matrix across series
+#'
+#' Compute a correlation matrix between multiple series after reshaping the data
+#' wide by `date`.
+#'
 #' @param data A data frame containing at least `date`, `series`, and a numeric
 #'   value column (default `"value"`).
 #' @param value_col Name of the numeric value column in `data` to use for the
@@ -190,7 +260,6 @@ boc_autocorr <- function(data,
 #' @return A numeric correlation matrix with one row/column per series.
 #' @export
 boc_correlation <- function(data, value_col = "value") {
-  # reshape wide without adding new dependencies
   wide <- stats::reshape(
     data = dplyr::select(data, date, series, val = .data[[value_col]]),
     idvar = "date", timevar = "series", direction = "wide"
