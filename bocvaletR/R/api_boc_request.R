@@ -18,10 +18,13 @@ boc_request <- function(path, query = list()) {
   
   tryCatch(
     {
-      httr2::resp_body_json(resp, simplifyVector = FALSE)
+      httr2::resp_body_json(resp, simplifyVector = FALSE, check_type = FALSE)
     },
     error = function(e) {
-      rlang::abort("Failed to parse JSON with simplifyVector=FALSE")
+      rlang::abort(paste0(
+        "Failed to parse JSON with simplifyVector=FALSE: ",
+        conditionMessage(e)
+      ))
     }
   )
 }

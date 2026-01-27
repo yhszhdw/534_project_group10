@@ -33,6 +33,42 @@ boc_fx_rss <- function(series = NULL, concat = TRUE, progress = TRUE) {
     sub(".*/", "", item_about)
   }
 
+  # helper to return a correctly-shaped empty tibble
+  empty_fx_tbl <- function(feed_series = NULL) {
+    tibble::tibble(
+      feed_series = if (is.null(feed_series) || !nzchar(feed_series)) NA_character_ else feed_series,
+      item_series = character(),
+      title = character(),
+      link = character(),
+      description = character(),
+      dc_date_utc = as.POSIXct(character(), tz = "UTC"),
+      value = numeric(),
+      base_currency = character(),
+      target_currency = character(),
+      rate_type = character(),
+      observation_period_utc = as.POSIXct(character(), tz = "UTC"),
+      country = character()
+    )
+  }
+
+  # robust datetime parsing (proposal #4)
+  parse_boc_datetime_utc <- function(x) {
+    if (is.na(x) || !nzchar(x)) return(as.POSIXct(NA_character_, tz = "UTC"))
+    # try a few common ISO-8601 variants, including fractional seconds and offsets
+    as.POSIXct(
+      x,
+      tz = "UTC",
+      tryFormats = c(
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%OSZ",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%OS%z",
+        "%Y-%m-%dT%H:%M:%S%:z",
+        "%Y-%m-%dT%H:%M:%OS%:z"
+      )
+    )
+  }
+
   fetch_one_feed <- function(feed_series = NULL) {
     url <- if (is.null(feed_series) || length(feed_series) == 0 || !nzchar(feed_series)) {
       "https://www.bankofcanada.ca/valet/fx_rss"
@@ -40,38 +76,62 @@ boc_fx_rss <- function(series = NULL, concat = TRUE, progress = TRUE) {
       paste0("https://www.bankofcanada.ca/valet/fx_rss/", feed_series)
     }
 
-    resp <- httr::GET(url, httr::user_agent("bocvaletR (fx_rss)"))
-    httr::stop_for_status(resp)
-    xml_txt <- httr::content(resp, as = "text", encoding = "UTF-8")
-    doc <- xml2::read_xml(xml_txt)
+    # graceful network / HTTP errors (proposal #1)
+    resp <- tryCatch(
+      httr::GET(url, httr::user_agent("bocvaletR (fx_rss)")),
+      error = function(e) {
+        warning(sprintf("boc_fx_rss: request failed for '%s': %s", url, conditionMessage(e)))
+        return(NULL)
+      }
+    )
+    if (is.null(resp)) return(empty_fx_tbl(feed_series))
+
+    # stop_for_status but graceful (proposal #1)
+    ok <- tryCatch(
+      {
+        httr::stop_for_status(resp)
+        TRUE
+      },
+      error = function(e) {
+        warning(sprintf("boc_fx_rss: HTTP error for '%s': %s", url, conditionMessage(e)))
+        FALSE
+      }
+    )
+    if (!ok) return(empty_fx_tbl(feed_series))
+
+    xml_txt <- tryCatch(
+      httr::content(resp, as = "text", encoding = "UTF-8"),
+      error = function(e) {
+        warning(sprintf("boc_fx_rss: failed reading response body for '%s': %s", url, conditionMessage(e)))
+        return(NA_character_)
+      }
+    )
+    if (is.na(xml_txt) || !nzchar(xml_txt)) return(empty_fx_tbl(feed_series))
+
+    # graceful XML parsing errors (proposal #2)
+    doc <- tryCatch(
+      xml2::read_xml(xml_txt),
+      error = function(e) {
+        warning(sprintf("boc_fx_rss: XML parse failed for '%s': %s", url, conditionMessage(e)))
+        return(NULL)
+      }
+    )
+    if (is.null(doc)) return(empty_fx_tbl(feed_series))
 
     items <- xml2::xml_find_all(doc, ".//rss:item", ns = ns)
 
     if (length(items) == 0) {
-      return(tibble::tibble(
-        feed_series = character(),
-        item_series = character(),
-        title = character(),
-        link = character(),
-        description = character(),
-        dc_date_utc = as.POSIXct(character()),
-        value = numeric(),
-        base_currency = character(),
-        target_currency = character(),
-        rate_type = character(),
-        observation_period_utc = as.POSIXct(character()),
-        country = character()
-      ))
+      return(empty_fx_tbl(feed_series))
     }
 
     rows <- lapply(items, function(node) {
       item_about <- xml2::xml_attr(node, "rdf:about", ns = ns)
       if (is.na(item_about) || !nzchar(item_about)) {
-         item_about <- xml2::xml_attr(node, "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about")
+        item_about <- xml2::xml_attr(node, "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about")
       }
       if (is.na(item_about) || !nzchar(item_about)) {
-         item_about <- xml2::xml_attr(node, "about")
-    }
+        item_about <- xml2::xml_attr(node, "about")
+      }
       item_series <- parse_item_series(item_about)
 
       title <- xtext1(node, "./rss:title")
@@ -79,11 +139,7 @@ boc_fx_rss <- function(series = NULL, concat = TRUE, progress = TRUE) {
       desc  <- xtext1(node, "./rss:description")
 
       dc_date <- xtext1(node, "./dc:date")
-      dc_date_utc <- if (!is.na(dc_date)) {
-        as.POSIXct(dc_date, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-      } else {
-        as.POSIXct(NA_character_, tz = "UTC")
-      }
+      dc_date_utc <- parse_boc_datetime_utc(dc_date)
 
       country <- xtext1(node, ".//cb:country")
 
@@ -95,11 +151,7 @@ boc_fx_rss <- function(series = NULL, concat = TRUE, progress = TRUE) {
       rate_type       <- xtext1(node, ".//cb:exchangeRate/cb:rateType")
 
       obs_period <- xtext1(node, ".//cb:exchangeRate/cb:observationPeriod")
-      observation_period_utc <- if (!is.na(obs_period)) {
-        as.POSIXct(obs_period, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-      } else {
-        as.POSIXct(NA_character_, tz = "UTC")
-      }
+      observation_period_utc <- parse_boc_datetime_utc(obs_period)
 
       tibble::tibble(
         feed_series = if (is.null(feed_series) || !nzchar(feed_series)) NA_character_ else feed_series,
