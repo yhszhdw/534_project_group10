@@ -109,3 +109,27 @@ Planned next steps:
     - Finalize and validate GitHub Actions CI workflow
     - Extend unit tests to remaining API functions
     - Integrate automated coverage reporting into CI
+
+## January 27 — Test completion and CI stabilization
+
+Completed all API-related unit tests and finalized the continuous integration workflow.
+
+Key work:
+    - Implemented comprehensive testthat unit tests for all API-facing functions
+    - Verified correct handling of successful responses, edge cases, and error conditions
+    - Ensured consistent use of mocked HTTP requests across all API tests
+    - Resolved dependency and environment issues in the GitHub Actions workflow
+    - Successfully ran automated R CMD check in CI without errors
+
+Current status:
+    - All API-related test files completed
+    - All tests pass locally and in CI
+    - GitHub Actions workflow runs successfully on push and pull requests
+    - CI environment now consistent with local development setup
+
+Planned next steps:
+    - Refactor and clean up test code for readability and maintainability
+    - Add documentation for testing and CI workflow in the project README
+    - Expand coverage to include non-API utility functions
+    - Prepare the package for release and final review
+
