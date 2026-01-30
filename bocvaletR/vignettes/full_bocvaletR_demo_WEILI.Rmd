@@ -168,3 +168,11 @@ lapply(exported_fns, function(nm) {
 ```{r session-info}
 sessionInfo()
 ```
+---
+title: "bocvaletR demo"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{bocvaletR demo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---

@@ -2,10 +2,16 @@
 # FX Risk Metrics and Visualization
 # DATA 550 – Financial Visualization Standard
 
-# ------------------------------------------------
-# 1. Core risk metrics: Historical VaR & CVaR
-# ------------------------------------------------
-
+#' Historical VaR and CVaR
+#'
+#' Compute Value-at-Risk (VaR) and Conditional VaR (CVaR) for a numeric
+#' return vector using historical simulation.
+#'
+#' @param x Numeric vector of returns.
+#' @param alpha Tail probability (default 0.05).
+#'
+#' @return A list with elements `var` and `cvar`.
+#' @export
 risk_var_cvar <- function(x, alpha = 0.05) {
 
   # ---- Input validation (explicit & early) ----
@@ -50,6 +56,13 @@ risk_var_cvar <- function(x, alpha = 0.05) {
 # 2. Visualization: VaR / CVaR (DATA 550 style)
 # ------------------------------------------------
 
+#' Plot VaR and CVaR with histogram/density
+#'
+#' @inheritParams risk_var_cvar
+#' @param title Optional plot title.
+#'
+#' @return A list with `plot`, `var`, and `cvar`.
+#' @export
 risk_plot_var_cvar <- function(x, alpha = 0.05, title = NULL) {
 
   stats <- risk_var_cvar(x, alpha)
@@ -113,10 +126,15 @@ risk_plot_var_cvar <- function(x, alpha = 0.05, title = NULL) {
   )
 }
 
-# ------------------------------------------------
-# 3. Text summary
-# ------------------------------------------------
-
+#' Text summary for VaR / CVaR results
+#'
+#' @param n Sample size.
+#' @param alpha Tail probability.
+#' @param var Value-at-Risk value.
+#' @param cvar Conditional VaR value.
+#'
+#' @return A character string describing the risk metrics.
+#' @export
 risk_text_summary <- function(n, alpha, var, cvar) {
 
   if (!is.numeric(n) || n <= 0) {
