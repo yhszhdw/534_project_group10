@@ -133,3 +133,7 @@ Planned next steps:
     - Expand coverage to include non-API utility functions
     - Prepare the package for release and final review
 
+## January 29 - Debugging
+
+Key work:
+    - Changing test_boc_request.R file, it was skipping all the test, making the test passing all the CI, but it is not running properly.
