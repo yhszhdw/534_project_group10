@@ -7,12 +7,12 @@
 boc_request(path, query = list())
 }
 \arguments{
-\item{path}{API path after /valet/}
+\item{path}{API path after /valet/ (e.g. "lists/series/json")}
 
-\item{query}{Named list of query parameters}
+\item{query}{Named list of query parameters (e.g. list(start_date="2020-01-01"))}
 }
 \value{
-Parsed JSON response
+Parsed JSON response (list)
 }
 \description{
 Internal helper to call Bank of Canada Valet API
