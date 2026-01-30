@@ -5,18 +5,59 @@ first_non_na <- function(x) {
   x[idx[1]]
 }
 
-# Simple “last observation carried forward”
+# Simple "last observation carried forward"
 fill_locf <- function(x) {
   if (!length(x)) return(x)
   for (i in seq_along(x)) if (is.na(x[i]) && i > 1) x[i] <- x[i - 1]
   x
 }
 
-# “next observation carried backward”
+# "next observation carried backward"
 fill_nocb <- function(x) {
   if (!length(x)) return(x)
   for (i in rev(seq_along(x))) if (is.na(x[i]) && i < length(x)) x[i] <- x[i + 1]
   x
+}
+
+# Basic validators used by exported helpers
+validate_data <- function(data, required_cols = NULL) {
+  if (!is.data.frame(data)) {
+    rlang::abort("`data` must be a data.frame or tibble.")
+  }
+  if (!is.null(required_cols)) {
+    missing <- setdiff(required_cols, names(data))
+    if (length(missing)) {
+      rlang::abort(paste0("Missing required column(s): ", paste(missing, collapse = ", ")))
+    }
+  }
+}
+
+validate_numeric_column <- function(data, col) {
+  if (!is.numeric(data[[col]])) {
+    rlang::abort(paste0("`", col, "` must be numeric."))
+  }
+}
+
+validate_scalar_positive_integer <- function(x, name) {
+  if (length(x) != 1 || is.na(x) || x < 1 || x != as.integer(x)) {
+    rlang::abort(paste0("`", name, "` must be a single positive integer."))
+  }
+}
+
+validate_scalar_numeric <- function(x, name) {
+  if (length(x) != 1 || !is.numeric(x) || !is.finite(x)) {
+    rlang::abort(paste0("`", name, "` must be a single finite numeric value."))
+  }
+}
+
+# Wrapper to add consistent, informative error context around operations
+safe_exec <- function(expr, context = "operation") {
+  tryCatch(
+    expr,
+    error = function(e) {
+      rlang::abort(paste0(context, ": ", conditionMessage(e)), parent = e)
+    }
+  )
 }
 
 # Linear interpolation for gaps (needs at least two non-missing points)
@@ -31,6 +72,63 @@ fill_linear <- function(x) {
 roll_mean <- function(x, k) {
   if (k <= 1) return(x)
   as.numeric(stats::filter(x, rep(1 / k, k), sides = 1))
+}
+
+#' Align FX/IR timestamps to a common "close" date
+#'
+#' Exchange rate and interest-rate markets trade across time zones. To avoid
+#' misaligned daily changes (e.g., NY close vs. London close), align each
+#' timestamp to a synthetic "close" date based on a cut-off time in a reference
+#' time zone (default 17:00 America/New_York, the common FX convention).
+#'
+#' @param data A data.frame/tibble containing the time series.
+#' @param datetime_col Name of the POSIXct timestamp column (string).
+#' @param input_tz Time zone used to interpret `datetime_col` if it is stored as
+#'   character (default "UTC").
+#' @param cutoff_hour Integer hour (0-23) of the daily close in `cutoff_tz`.
+#' @param cutoff_min Integer minute (0-59) of the daily close.
+#' @param cutoff_tz Olson time zone string for the close (default "America/New_York").
+#' @param new_col Name of the output date column to create (string). Default "fx_date".
+#'
+#' @return A tibble/data.frame with an added date column `new_col` that buckets
+#'   each observation to the chosen close date.
+#' @export
+boc_align_fx_close <- function(data,
+                               datetime_col = "timestamp",
+                               input_tz = "UTC",
+                               cutoff_hour = 17,
+                               cutoff_min = 0,
+                               cutoff_tz = "America/New_York",
+                               new_col = "fx_date") {
+
+  validate_data(data, datetime_col)
+
+  if (length(cutoff_hour) != 1 || cutoff_hour < 0 || cutoff_hour > 23) {
+    rlang::abort("`cutoff_hour` must be a single integer between 0 and 23.")
+  }
+  if (length(cutoff_min) != 1 || cutoff_min < 0 || cutoff_min > 59) {
+    rlang::abort("`cutoff_min` must be a single integer between 0 and 59.")
+  }
+
+  dt_raw <- data[[datetime_col]]
+  # Ensure POSIXct; if character, try to parse with input_tz
+  if (!inherits(dt_raw, "POSIXct")) {
+    dt_raw <- as.POSIXct(dt_raw, tz = input_tz)
+  }
+  if (!inherits(dt_raw, "POSIXct")) {
+    rlang::abort(paste0("`", datetime_col, "` must be POSIXct or coercible to POSIXct."))
+  }
+
+  safe_exec({
+    dt_local <- lubridate::with_tz(dt_raw, tzone = cutoff_tz)
+    cutoff_base <- lubridate::floor_date(dt_local, unit = "day")
+    cutoff_dt <- cutoff_base + lubridate::hours(cutoff_hour) + lubridate::minutes(cutoff_min)
+    aligned_date <- dplyr::if_else(dt_local < cutoff_dt,
+                                   as.Date(cutoff_dt - lubridate::days(1)),
+                                   as.Date(cutoff_dt))
+    data[[new_col]] <- aligned_date
+    data
+  }, "boc_align_fx_close failed")
 }
 
 #' Time Series Utility Functions
@@ -55,24 +153,29 @@ boc_normalize <- function(data,
                           new_col = "normalized") {
 
   method <- match.arg(method)
+  validate_data(data, c(value_col, group_col))
+  validate_numeric_column(data, value_col)
+  validate_scalar_numeric(index_base, "index_base")
 
-  data %>%
-    dplyr::group_by(.data[[group_col]]) %>%
-    dplyr::mutate(
-      !!new_col := {
-        v <- .data[[value_col]]
-        if (method == "zscore") {
-          (v - mean(v, na.rm = TRUE)) / stats::sd(v, na.rm = TRUE)
-        } else if (method == "minmax") {
-          rng <- range(v, na.rm = TRUE)
-          if (diff(rng) == 0) NA_real_ else (v - rng[1]) / diff(rng)
-        } else { # index
-          base <- first_non_na(v)
-          if (is.na(base) || base == 0) NA_real_ else (v / base) * index_base
+  safe_exec({
+    data %>%
+      dplyr::group_by(.data[[group_col]]) %>%
+      dplyr::mutate(
+        !!new_col := {
+          v <- .data[[value_col]]
+          if (method == "zscore") {
+            (v - mean(v, na.rm = TRUE)) / stats::sd(v, na.rm = TRUE)
+          } else if (method == "minmax") {
+            rng <- range(v, na.rm = TRUE)
+            if (diff(rng) == 0) NA_real_ else (v - rng[1]) / diff(rng)
+          } else { # index
+            base <- first_non_na(v)
+            if (is.na(base) || base == 0) NA_real_ else (v / base) * index_base
+          }
         }
-      }
-    ) %>%
-    dplyr::ungroup()
+      ) %>%
+      dplyr::ungroup()
+  }, "boc_normalize failed")
 }
 
 #' Fill missing values
@@ -103,12 +206,16 @@ boc_fill_missing <- function(data,
                      locf = fill_locf,
                      nocb = fill_nocb,
                      linear = fill_linear)
+  validate_data(data, c(value_col, order_col, group_col))
+  validate_numeric_column(data, value_col)
 
-  data %>%
-    dplyr::arrange(.data[[order_col]]) %>%
-    dplyr::group_by(.data[[group_col]]) %>%
-    dplyr::mutate(!!new_col := fill_fun(.data[[value_col]])) %>%
-    dplyr::ungroup()
+  safe_exec({
+    data %>%
+      dplyr::arrange(.data[[order_col]]) %>%
+      dplyr::group_by(.data[[group_col]]) %>%
+      dplyr::mutate(!!new_col := fill_fun(.data[[value_col]])) %>%
+      dplyr::ungroup()
+  }, "boc_fill_missing failed")
 }
 
 #' Summary statistics by series
@@ -129,21 +236,26 @@ boc_summary <- function(data,
                         order_col = "date",
                         group_col = "series") {
 
-  data %>%
-    dplyr::group_by(.data[[group_col]]) %>%
-    dplyr::summarise(
-      n = dplyr::n(),
-      n_missing = sum(is.na(.data[[value_col]])),
-      n_non_missing = n - n_missing,
-      start = suppressWarnings(min(.data[[order_col]], na.rm = TRUE)),
-      end   = suppressWarnings(max(.data[[order_col]], na.rm = TRUE)),
-      min = suppressWarnings(min(.data[[value_col]], na.rm = TRUE)),
-      max = suppressWarnings(max(.data[[value_col]], na.rm = TRUE)),
-      mean = mean(.data[[value_col]], na.rm = TRUE),
-      median = stats::median(.data[[value_col]], na.rm = TRUE),
-      sd = stats::sd(.data[[value_col]], na.rm = TRUE),
-      .groups = "drop"
-    )
+  validate_data(data, c(value_col, order_col, group_col))
+  validate_numeric_column(data, value_col)
+
+  safe_exec({
+    data %>%
+      dplyr::group_by(.data[[group_col]]) %>%
+      dplyr::summarise(
+        n = dplyr::n(),
+        n_missing = sum(is.na(.data[[value_col]])),
+        n_non_missing = n - n_missing,
+        start = suppressWarnings(min(.data[[order_col]], na.rm = TRUE)),
+        end   = suppressWarnings(max(.data[[order_col]], na.rm = TRUE)),
+        min = suppressWarnings(min(.data[[value_col]], na.rm = TRUE)),
+        max = suppressWarnings(max(.data[[value_col]], na.rm = TRUE)),
+        mean = mean(.data[[value_col]], na.rm = TRUE),
+        median = stats::median(.data[[value_col]], na.rm = TRUE),
+        sd = stats::sd(.data[[value_col]], na.rm = TRUE),
+        .groups = "drop"
+      )
+  }, "boc_summary failed")
 }
 
 #' Percent change over k periods
@@ -171,19 +283,24 @@ boc_percent_change <- function(data,
                                new_col = "pct_change") {
 
   type <- match.arg(type)
+  validate_data(data, c(value_col, order_col, group_col))
+  validate_numeric_column(data, value_col)
+  validate_scalar_positive_integer(periods, "periods")
 
-  data %>%
-    dplyr::arrange(.data[[order_col]]) %>%
-    dplyr::group_by(.data[[group_col]]) %>%
-    dplyr::mutate(
-      !!new_col := if (type == "log") {
-        log(.data[[value_col]]) - log(dplyr::lag(.data[[value_col]], periods))
-      } else {
-        (.data[[value_col]] - dplyr::lag(.data[[value_col]], periods)) /
-          dplyr::lag(.data[[value_col]], periods)
-      }
-    ) %>%
-    dplyr::ungroup()
+  safe_exec({
+    data %>%
+      dplyr::arrange(.data[[order_col]]) %>%
+      dplyr::group_by(.data[[group_col]]) %>%
+      dplyr::mutate(
+        !!new_col := if (type == "log") {
+          log(.data[[value_col]]) - log(dplyr::lag(.data[[value_col]], periods))
+        } else {
+          (.data[[value_col]] - dplyr::lag(.data[[value_col]], periods)) /
+            dplyr::lag(.data[[value_col]], periods)
+        }
+      ) %>%
+      dplyr::ungroup()
+  }, "boc_percent_change failed")
 }
 
 #' Rolling mean (right-aligned)
@@ -208,13 +325,18 @@ boc_rolling_mean <- function(data,
                              group_col = "series",
                              new_col = "roll_mean") {
 
+  validate_data(data, c(value_col, order_col, group_col))
+  validate_numeric_column(data, value_col)
+  validate_scalar_positive_integer(window, "window")
   stopifnot(window >= 1)
 
-  data %>%
-    dplyr::arrange(.data[[order_col]]) %>%
-    dplyr::group_by(.data[[group_col]]) %>%
-    dplyr::mutate(!!new_col := roll_mean(.data[[value_col]], window)) %>%
-    dplyr::ungroup()
+  safe_exec({
+    data %>%
+      dplyr::arrange(.data[[order_col]]) %>%
+      dplyr::group_by(.data[[group_col]]) %>%
+      dplyr::mutate(!!new_col := roll_mean(.data[[value_col]], window)) %>%
+      dplyr::ungroup()
+  }, "boc_rolling_mean failed")
 }
 
 #' Autocorrelation up to a chosen lag (per series)
@@ -233,18 +355,24 @@ boc_autocorr <- function(data,
                          lag_max = 10,
                          group_col = "series") {
 
-  data %>%
-    dplyr::group_by(.data[[group_col]]) %>%
-    dplyr::summarise(
-      tibble::tibble(
-        lag = seq_len(lag_max),
-        acf = stats::acf(.data[[value_col]],
-                         lag.max = lag_max,
-                         plot = FALSE,
-                         na.action = na.omit)$acf[-1]
-      ),
-      .groups = "drop"
-    )
+  validate_data(data, c(value_col, group_col))
+  validate_numeric_column(data, value_col)
+  validate_scalar_positive_integer(lag_max, "lag_max")
+
+  safe_exec({
+    data %>%
+      dplyr::group_by(.data[[group_col]]) %>%
+      dplyr::summarise(
+        tibble::tibble(
+          lag = seq_len(lag_max),
+          acf = stats::acf(.data[[value_col]],
+                           lag.max = lag_max,
+                           plot = FALSE,
+                           na.action = na.omit)$acf[-1]
+        ),
+        .groups = "drop"
+      )
+  }, "boc_autocorr failed")
 }
 
 #' Pairwise correlation matrix across series
@@ -260,14 +388,24 @@ boc_autocorr <- function(data,
 #' @return A numeric correlation matrix with one row/column per series.
 #' @export
 boc_correlation <- function(data, value_col = "value") {
-  wide <- stats::reshape(
-    data = dplyr::select(data, date, series, val = .data[[value_col]]),
-    idvar = "date", timevar = "series", direction = "wide"
-  )
-  if (ncol(wide) < 3) {
-    rlang::abort("Need at least two series to compute a correlation matrix.")
+
+  validate_data(data, c("date", "series", value_col))
+  validate_numeric_column(data, value_col)
+  if (dplyr::n_distinct(data$series) < 2) {
+    rlang::abort("Need at least two distinct series to compute a correlation matrix.")
   }
-  mat <- as.matrix(wide[, -1, drop = FALSE])
-  colnames(mat) <- sub("^val\\.", "", colnames(mat))
-  stats::cor(mat, use = "pairwise.complete.obs")
+
+  safe_exec({
+    wide <- stats::reshape(
+      data = dplyr::select(data, date, series, val = .data[[value_col]]),
+      idvar = "date", timevar = "series", direction = "wide"
+    )
+    if (ncol(wide) < 3) {
+      rlang::abort("Need at least two series to compute a correlation matrix.")
+    }
+    mat <- as.matrix(wide[, -1, drop = FALSE])
+    colnames(mat) <- sub("^val\\.", "", colnames(mat))
+    stats::cor(mat, use = "pairwise.complete.obs")
+  }, "boc_correlation failed")
 }
+

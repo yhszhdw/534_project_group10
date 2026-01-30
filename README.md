@@ -120,9 +120,12 @@ boc_percent_change()   # Period-over-period percentage change
 boc_rolling_mean()     # Rolling averages
 boc_autocorr()         # Autocorrelation analysis
 boc_correlation()      # Multi-series correlation matrices
+boc_align_fx_close()   # Align FX/IR timestamps to a consistent daily close (time zone aware)
 ```
 
 These utilities are intentionally lightweight and designed to complement, not replace, existing tidyverse tools. Together, they distinguish bocvaletR from existing Valet API wrappers by supporting complete analysis workflows.
+
+**FX/IR time-zone caution:** Cross-market series can settle at different local times (e.g., London vs. New York). Use `boc_align_fx_close()` to bucket timestamps to a common "close" date (default 17:00 America/New_York) before computing daily returns to avoid off-by-one-day errors or delayed outputs.
 
 ---
 

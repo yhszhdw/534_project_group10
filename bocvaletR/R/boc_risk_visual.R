@@ -10,11 +10,19 @@ risk_var_cvar <- function(x, alpha = 0.05) {
 
   # ---- Input validation (explicit & early) ----
   if (!is.numeric(x)) {
-    stop("Input x must be a numeric vector.", call. = FALSE)
+    if (is.logical(x)) {
+      x <- as.numeric(x)
+    } else {
+      stop("Input x must be a numeric vector.", call. = FALSE)
+    }
   }
 
   if (length(x) < 2) {
     stop("Input x must contain at least two observations.", call. = FALSE)
+  }
+
+  if (all(is.na(x))) {
+    stop("no valid observations", call. = FALSE)
   }
 
   if (!is.numeric(alpha) || length(alpha) != 1 || alpha <= 0 || alpha >= 1) {
@@ -25,7 +33,7 @@ risk_var_cvar <- function(x, alpha = 0.05) {
   x <- x[is.finite(x)]
 
   if (length(x) == 0) {
-    stop("After removing non-finite values, x contains no valid observations.", call. = FALSE)
+    stop("no valid observations", call. = FALSE)
   }
 
   # ---- Risk measures ----

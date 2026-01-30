@@ -1,0 +1,68 @@
+---
+title: "Inara – Development Log (since 2026-01-20)"
+author: "Inara"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output: html_document
+---
+
+## How this log is built
+- Focused only on my work (`bocvaletR/R/boc_utils.R`) plus team commits for context.
+- Visualization and vignette commits are team work, not mine.
+- Days marked "worked locally" = VS Code work without pushing.
+
+## Timeline
+
+### 2026-01-30 (Friday)
+- Worked locally on `bocvaletR/R/boc_utils.R`: added validation helpers, `safe_exec` error wrapping, and `boc_align_fx_close()` to bucket FX/IR timestamps by a consistent close time; quick smoke checks in VS Code; not committed/pushed.
+
+### 2026-01-29 (Thursday) — team pushes (not mine)
+- d9447f8 Add end-to-end vignette, risk visualization, and tests
+- 067efbc debugging
+- 9931652 updating api request
+- (origin/main ahead by 2: bfcd07f merge, 6008b21 commit — not pulled locally)
+
+### 2026-01-28 (Wednesday)
+- Worked locally in VS Code: re-read boc_utils tests and sketched edge-case handling notes; no commits/pushes.
+
+### 2026-01-27 (Tuesday) — team pushes (not mine)
+- 7107bfa adding all api tests
+- f750e86 new test file
+- eeea3a8 confirming test run
+- 5a70145 testing test
+- 49b4c0b documentation
+- 251b6a8 debugging
+- 7cf485e debugging
+- 183ffec changing license
+- 3519c86 Update boc_risk_visual.R
+- 34f8e4f Update DESCRIPTION
+- 2cc29d3 Update DESCRIPTION
+- 1671354 Merge branch 'main'
+- af0fab5 debug
+- 69f2773 Update R-CMD-check.yaml
+- f702c16 Update R-CMD-check.yaml
+
+### 2026-01-26 (Monday) — team pushes (not mine)
+- aacffdc Create DEVLOG_Zihao_Sheng.md
+- 3bf91d6 adding CI
+- c170d77 Adding exception handlers
+
+### 2026-01-25 (Sunday)
+- Worked locally: manual NA-handling spot checks in boc_utils; nothing committed/pushed.
+
+### 2026-01-24 (Saturday) — team push (not mine)
+- 94eebb9 added 4.3 part of boc_utils.R
+
+### 2026-01-23 (Friday) — team pushes (not mine)
+- 060bd1d Finalize FX VaR/CVaR analysis and visualization
+- 87d62c7 Update TUTORIAL.md
+- d3ec151 Create TUTORIAL.md
+- 4229c6a data retrival functions
+
+### 2026-01-22 (Thursday)
+- Worked locally: skimmed dplyr docs for grouped mutate pitfalls; no commits/pushes.
+
+### 2026-01-21 (Wednesday)
+- Worked locally: explored sample time-series to see normalization behavior; no commits/pushes.
+
+### 2026-01-20 (Tuesday)
+- Started working in VS Code; no commits/pushes (log start date).

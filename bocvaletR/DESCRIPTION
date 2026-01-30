@@ -11,6 +11,8 @@ Imports:
     httr2,
     purrr,
     rlang,
+    magrittr,
+    lubridate,
     tibble,
     xml2,
     ggplot2

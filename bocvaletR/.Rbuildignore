@@ -2,6 +2,10 @@
 ^\.Rproj\.user$
 ^doc$
 ^Meta$
+^LICENSE\.md$
+^scripts$
+^vignettes/outputs$
+^R/notebook_WEILI\.Rmd$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
