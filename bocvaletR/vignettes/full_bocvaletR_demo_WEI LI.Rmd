@@ -1,0 +1,170 @@
+---
+title: "bocvaletR: Full End-to-End Demonstration"
+author: "Group Project – DATA 534 / DATA 550"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+library(bocvaletR)
+library(ggplot2)
+
+`%||%` <- function(x, y) if (!is.null(x)) x else y
+
+set.seed(123)
+```
+
+# 1. Package overview
+
+This document provides a **complete end-to-end demonstration** of the
+`bocvaletR` package. All major exported functions are exercised at least once,
+covering data discovery, retrieval, visualization, and risk analysis.
+
+# 2. Exported functions
+
+```{r list-exports}
+exports <- ls("package:bocvaletR")
+exports
+```
+
+```{r exported-functions}
+exported_fns <- exports[
+  vapply(
+    exports,
+    function(nm) is.function(get(nm, asNamespace("bocvaletR"))),
+    logical(1)
+  )
+]
+exported_fns
+```
+
+# 3. Data discovery
+
+```{r discovery}
+maybe_call <- function(fname) {
+  if (exists(fname, where = asNamespace("bocvaletR"), inherits = FALSE)) {
+    cat("\n\n### Running:", fname, "\n")
+    try(get(fname, asNamespace("bocvaletR"))(), silent = TRUE)
+  } else {
+    cat("\n\n### Skipped (not exported):", fname, "\n")
+  }
+}
+
+maybe_call("boc_list")
+maybe_call("boc_groups")
+maybe_call("boc_fx_rss")
+```
+
+# 4. Retrieve FX time series
+
+```{r fetch-series}
+df <- boc_series("FXUSDCAD")
+
+stopifnot(
+  is.data.frame(df),
+  all(c("date", "value") %in% names(df))
+)
+
+head(df, 10)
+```
+
+```{r coerce}
+if (!is.numeric(df$value)) {
+  df$value <- as.numeric(df$value)
+}
+summary(df$value)
+```
+
+# 5. Time series visualization
+
+```{r plot-series}
+p_series <- boc_plot(df)
+p_series
+```
+
+# 6. Log returns
+
+```{r returns}
+x <- diff(log(df$value))
+x <- x[is.finite(x)]
+summary(x)
+```
+
+# 7. Historical VaR and CVaR
+
+```{r risk-analysis}
+risk_stats <- risk_var_cvar(x, alpha = 0.05)
+risk_stats
+```
+
+```{r risk-plot}
+res <- risk_plot_var_cvar(
+  x,
+  alpha = 0.05,
+  title = "FXUSDCAD Historical VaR / CVaR"
+)
+print(res$plot)
+```
+
+# 8. Risk summary
+
+```{r risk-summary}
+risk_text_summary(
+  n     = length(x),
+  alpha = 0.05,
+  var   = res$var,
+  cvar  = res$cvar
+)
+```
+
+# 9. Export outputs
+
+```{r export}
+out_dir <- "outputs"
+dir.create(out_dir, showWarnings = FALSE)
+
+ggsave(
+  file.path(out_dir, "fx_series.png"),
+  plot = p_series,
+  width = 8,
+  height = 4
+)
+
+ggsave(
+  file.path(out_dir, "fx_var_cvar.png"),
+  plot = res$plot,
+  width = 8,
+  height = 4.5
+)
+
+write.csv(
+  data.frame(log_return = x),
+  file.path(out_dir, "fx_returns.csv"),
+  row.names = FALSE
+)
+```
+
+# 10. Coverage confirmation
+
+```{r coverage}
+lapply(exported_fns, function(nm) {
+  fn <- get(nm, asNamespace("bocvaletR"))
+  paste0(nm, "(", paste(names(formals(fn)), collapse = ", "), ")")
+})
+```
+
+# 11. Session information
+
+```{r session-info}
+sessionInfo()
+```

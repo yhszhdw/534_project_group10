@@ -1,0 +1,120 @@
+---
+title: "Daily Notebook – FX Risk Analysis with Bank of Canada API"
+author: "WEI LI"
+date: "2026-01-13"
+output: html_document
+---
+
+## Project Overview
+
+This notebook documents my **individual daily contributions** to a financial data and risk analysis project based on **real-world web data**, using the **Bank of Canada Valet API**.
+
+My personal focus in the group project was to:
+
+-   Build a clean and reproducible **data-access pipeline** from a public financial API\
+-   Design **reusable R functions** for downloading financial time series\
+-   Implement a minimal but interpretable **historical VaR / CVaR risk analysis workflow**\
+-   Document development decisions and track progress through GitHub commits
+
+All work reported here corresponds to **my own code contributions**, tracked in my personal GitHub repository.
+
+------------------------------------------------------------------------
+
+## Days 1–2 – Project Initialization and API Exploration
+
+**Date:** 2026-01-11 to 2026-01-12
+
+### Work Done
+
+-   Cloned the group GitHub repository and initialized my local R project environment.
+-   Studied the Bank of Canada Valet API documentation to understand:
+    -   How time series are identified by **series IDs** (e.g., `FXUSDCAD`)
+    -   How metadata and observations are separated at the API level
+-   Successfully tested direct API access for FX time series data.
+
+### Key Development Decision
+
+I decided **not to rely on metadata-heavy workflows** for my own analysis.\
+Instead, I focused on directly validating and using **known, official series IDs** for data retrieval.
+
+This decision:
+
+-   Keeps the data pipeline simple and robust
+-   Avoids unnecessary dependencies on group-level metadata logic
+-   Makes the downstream risk analysis easily reproducible
+
+### Evidence
+
+-   Initial project setup and API exploration commit:\
+    <https://github.com/yhszhdw/534_project_group10/commit/54ed3e01fad31513041fcf2bb7f06885198627eb>
+
+------------------------------------------------------------------------
+
+## Days 3–4 – API Wrapper Development and FX Data Validation
+
+**Date:** 2026-01-13 to 2026-01-14
+
+### Work Done
+
+-   Implemented a reusable R function `boc_series()` to:
+    -   Query the Bank of Canada API
+    -   Download historical observations for a given series ID
+    -   Return clean, tidy tibbles suitable for analysis
+-   Verified that the daily USD/CAD exchange rate (`FXUSDCAD`) is:
+    -   A **daily FX series**
+    -   Suitable for financial return and risk analysis
+-   Explicitly avoided integrating group-level logic written by teammates, as it was not part of my individual contribution.
+
+### Key Development Decision
+
+I chose to **keep `boc_series()` narrowly scoped**:
+
+-   It only downloads time series observations
+-   It assumes the series ID has already been validated
+-   It does not mix metadata discovery with numerical data retrieval
+
+This design aligns with good API-wrapping practices and keeps analytical code clean.
+
+### Evidence
+
+-   Commit introducing and refining `boc_series()` for FX data:\
+    <https://github.com/yhszhdw/534_project_group10/commit/5b0602aaf794d8e76f26f83583ae5dde5d612152>
+
+------------------------------------------------------------------------
+
+## Days 5–6 – FX Returns Construction and Risk Analysis
+
+**Date:** 2026-01-15 to 2026-01-16
+
+### Work Done
+
+-   Retrieved real USD/CAD exchange rate data using:df \<- boc_series("FXUSDCAD")
+
+-   Constructed **daily log returns** from exchange rate levels.
+
+-   Implemented **historical Value-at-Risk (VaR)** and **Conditional Value-at-Risk (CVaR)**.
+
+-   Designed a clean and interpretable FX risk visualization aligned with **DATA 550** principles.
+
+## Key Development Decision
+
+Instead of shading the entire left-tail density, I used explicit **VaR** and **CVaR** reference lines together with **tail rug plots**.\
+This choice avoids visual ambiguity, prevents scale misinterpretation, and improves financial interpretability.
+
+## Evidence
+
+-   Commit adding FX risk analysis and visualization workflow:\
+    <https://github.com/yhszhdw/534_project_group10/commit/060bd1d56c0c80fff88ba0e3cec56f64cfc9c4d1>
+
+## Summary
+
+This notebook documents my individual contribution to building a **reproducible FX risk analysis pipeline** using real financial web data.
+
+My work emphasizes:
+
+-   Clean API-based data access\
+-   Transparent transformation from prices to returns\
+-   Interpretable risk metrics and visualization\
+-   Clear documentation of development decisions
+
+------------------------------------------------------------------------
