@@ -18,7 +18,7 @@ test_that("risk_var_cvar rejects invalid inputs", {
   )
   
   expect_error(
-    risk_var_cvar(c(NA, NA)),
+    risk_var_cvar(c(NA_real_, NA_real_)),
     "no valid observations"
   )
   
