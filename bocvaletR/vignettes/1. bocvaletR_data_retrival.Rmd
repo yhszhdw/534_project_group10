@@ -1,0 +1,167 @@
+---
+title: "1. bocvaletR_data_retrival"
+author: "Zihao Sheng"
+date: "2026-01-31"
+output: html_document
+---
+
+# bocvaletR package data retrieval
+
+```{r}
+library(bocvaletR)
+```
+
+### 1. Overview
+
+This vignette focuses on retrieving data from the Bank of Canada Valet API using bocvaletR. It covers the main data access functions and common workflows.
+
+### 2. Discover available data
+
+#### Section 2.1: `boc_list_series()` — Searching for individual series
+
+In order to browse through single available series and acquire the ID codes required to retrieve time series observations, we use the `boc_list_series()` function. This function returns metadata for all available Bank of Canada series, rather than the observations themselves.
+
+The function contains the following arguments:
+
+-   `keyword`: An optional character string used to search for series by ID, label, or description. This is useful for narrowing down results to a specific topic of interest.
+
+-   `limit`: An optional integer specifying the maximum number of series to return. This can be used to restrict the output when exploring a large number of available series.
+
+-   `as`: A character string indicating the output format.\
+    The default value `"df"` returns a tidy data frame, while `"json"` returns the raw JSON response from the Valet API.
+
+```{r}
+series <-boc_list_series()
+head(series)
+```
+
+Note that there are currently `r length(series)` of series ID in the data set. We can use the keyword and limit argument to filter the series names.
+
+```{r}
+exchange <- boc_list_series(keyword='exchange',limit=5)
+exchange
+```
+
+#### Section 2.2: `boc_list_groups` - Searching for series groups with
+
+In addition to searching for individual data series, the Bank of Canada organizes related series into groups. Grouping provides a convenient way to explore collections of thematically related time series and is particularly useful for exploratory analysis.
+
+The `boc_list_groups()` function returns metadata describing all available series groups, rather than the observations themselves. Each group contains multiple related series that can later be retrieved together.
+
+The function contains the following arguments:
+
+-   `keyword`: An optional character string used to search for groups by group ID, label, or description. This allows users to quickly locate groups related to a specific topic.
+
+-   `limit`: An optional integer specifying the maximum number of groups returned.
+
+-   `as`: A character string indicating the output format.\
+    The default `"df"` returns a tidy data frame, while `"json"` returns the raw JSON response from the Valet API.
+
+-   `clean_description`: A logical value indicating whether HTML tags and formatting should be removed from the group descriptions. The default value `TRUE` produces cleaner and more readable output.
+
+```{r}
+groups <- boc_list_groups()
+head(groups)
+```
+
+Similar to `boc_list_series`, we can use `keyword` and `limit` argument to filter the data set.
+
+```{r}
+FX <- boc_list_groups(keyword = 'FX')
+FX
+```
+
+#### Section 2.3: `boc_groups()` - Retrieving all series within a group
+
+Once a relevant series group has been identified, all series contained within that group can be retrieved using the `boc_groups()` function. This provides a convenient way to download a collection of related time series in a single step.
+
+The `boc_groups()` function requires a group ID as input and returns the observations for all series associated with that group. This is particularly useful when analyzing a set of thematically related indicators or when performing exploratory data analysis across multiple series.
+
+The function contains the following arguments:
+
+-   `group_id`: A character string specifying the group ID to be retrieved. This value can be obtained from the output of `boc_list_groups()`.
+
+-   `as`: A character string indicating the output format.\
+    The default `"df"` returns a tidy data frame, while `"json"` returns the raw JSON response from the Valet API.
+
+In this example, we demonstrate how to retrieve the series within `FX_RATES_DAILY` group
+
+```{r}
+FX[4,] #this is the group information retrieved from section 2.2
+FX_RATE_DAILY = boc_groups(FX[4,]$id)
+FX_RATE_DAILY$series
+```
+
+### 3. Retrieving data series using series IDs
+
+::: callout-note
+All Bank of Canada time series are uniquely identified by a **series ID**. These IDs can be obtained using `boc_list_series()` or extracted from the output of `boc_list_groups()` and `boc_groups()`. Once a valid series ID is available, the corresponding observations can be retrieved directly using the `boc_series()` function.
+:::
+
+The `boc_series()` function retrieves one or more data series given their corresponding series IDs. Series IDs uniquely identify each Bank of Canada time series and can be obtained using `boc_list_series()` or extracted from group-based queries.
+
+The function contains the following arguments:
+
+-   `series_id`: A character string or character vector specifying one or more series IDs to be retrieved. This argument is required.
+
+-   `as`: A character string indicating the output format.\
+    The default value `"df"` returns a tidy data frame suitable for analysis, while `"json"` returns the raw JSON response from the Valet API.
+
+#### Section 3.1: Retrieving a single data series
+
+The `boc_series()` function retrieves observations for one or more data series given their corresponding series IDs. This function returns the actual time series data and is the primary interface for accessing numerical observations in bocvaletR.
+
+```{r}
+fx <- boc_series("FXUSDCAD")
+head(fx)
+```
+
+#### Section 3.2: Retrieving multiple data series
+
+Multiple series can be retrieved simultaneously by providing a vector of series IDs. This is particularly useful when comparing related indicators or analyzing multiple exchange rates together.
+
+```{r}
+ids <- c("FXUSDCAD", "FXEURCAD")
+fx_multi <- boc_series(ids)
+head(fx_multi)
+```
+
+#### Section 3.3 Using series IDs obtained from groups
+
+Series IDs obtained from `boc_list_groups()` or `boc_groups()` can be passed directly to `boc_series()`, allowing flexible workflows in which users first explore available groups and then retrieve specific series of interest.
+
+```{r}
+groups <- boc_list_groups(keyword = "exchange", limit = 1)
+group_id <- groups$id[1]
+
+group_data <- boc_groups(group_id)
+series_ids <- unique(group_data$series$id)
+
+fx_selected <- boc_series(series_ids[1:2])
+head(fx_selected)
+```
+
+### 4. Monitoring foreign exchange updates with `boc_fx_rss()`
+
+::: callout-note
+In addition to retrieving historical time series data, bocvaletR provides access to the Bank of Canada foreign exchange RSS feed. This feed is designed for monitoring **recent updates** to exchange rate series rather than for retrieving long historical records.
+:::
+
+The `boc_fx_rss()` function retrieves the latest foreign exchange updates published by the Bank of Canada. Unlike `boc_series()`, which returns complete time series observations, this function focuses on newly released or recently updated exchange rate information.
+
+The `boc_fx_rss_available()` function retrieves the information of all the available `fx_rss` id.
+
+```{r}
+rss_id <-boc_fx_rss_available()
+rss_id
+```
+
+```{r}
+rss <- boc_fx_rss()
+rss
+
+#retrieving single fx_rss with rss_id
+
+rss_AUD <- boc_fx_rss(rss_id$item_series[1])
+rss_AUD
+```
