@@ -137,3 +137,39 @@ Planned next steps:
 
 Key work:
     - Changing test_boc_request.R file, it was skipping all the test, making the test passing all the CI, but it is not running properly.
+
+## January 30 - Debugging and Passing devtools::check()
+
+### Summary
+Completed all API-related unit testing and finalized the continuous integration (CI) workflow. The primary focus was ensuring robust test coverage for all API-facing functionality, validating error handling and edge cases, and aligning the CI environment with local development to guarantee reproducible `R CMD check` results.
+
+---
+
+### Key Work
+
+- Implemented comprehensive **testthat unit tests** for all API-facing functions
+- Verified correct behavior for:
+  - Successful API responses
+  - Edge cases (e.g., empty or malformed responses)
+  - Expected error and failure conditions
+- Ensured consistent and reliable use of **mocked HTTP requests** across all API tests to avoid external dependencies
+- Resolved dependency and environment inconsistencies in the **GitHub Actions CI workflow**
+- Successfully ran automated **R CMD check** in CI with no errors, warnings, or notes
+
+---
+
+### Current Status
+
+- ✅ All API-related test files completed
+- ✅ All tests pass locally and in the CI environment
+- ✅ GitHub Actions workflow runs successfully on both push and pull requests
+- ✅ CI environment is now consistent with the local development setup
+
+---
+
+### Planned Next Steps
+
+- Refactor and clean up test code to improve readability and long-term maintainability
+- Add documentation describing the testing strategy and CI workflow to the project README
+- Expand test coverage to include non-API utility functions
+- Perform final review and prepare the package for release
