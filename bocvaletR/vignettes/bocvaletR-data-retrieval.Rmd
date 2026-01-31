@@ -107,10 +107,27 @@ The `boc_series()` function retrieves one or more data series given their corres
 
 The function contains the following arguments:
 
--   `series_id`: A character string or character vector specifying one or more series IDs to be retrieved. This argument is required.
+- `series`  
+  A character string or character vector specifying one or more series IDs to be retrieved  
+  (e.g. `"FXUSDCAD"`). This argument is required.
 
--   `as`: A character string indicating the output format.\
-    The default value `"df"` returns a tidy data frame suitable for analysis, while `"json"` returns the raw JSON response from the Valet API.
+- `start_date`  
+  An optional character string specifying the start date of the series in `"YYYY-MM-DD"` format.  
+  If `NULL`, data are returned from the earliest available observation.
+
+- `end_date`  
+  An optional character string specifying the end date of the series in `"YYYY-MM-DD"` format.  
+  If `NULL`, data are returned up to the most recent available observation.
+
+- `concat`  
+  A logical value indicating how multiple series are returned.  
+  If `TRUE` (default), all series are combined into a single tidy tibble.  
+  If `FALSE`, a named list of tibbles is returned, one per series.
+
+- `progress`  
+  A logical value indicating whether to display a progress bar when retrieving multiple series.  
+  The default value is `TRUE`.
+
 
 #### Section 3.1: Retrieving a single data series
 

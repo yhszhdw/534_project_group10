@@ -1,0 +1,343 @@
+---
+title: "Data Retrieval with bocvaletR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data Process and Summary with bocvaletR}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# bocvaletR package data process and summary
+
+```{r}
+library(bocvaletR)
+```
+
+## 1. Overview
+
+This vignette demonstrates common preprocessing and summary workflows
+for time series data retrieved from the Bank of Canada Valet API using
+bocvaletR. We focus on the helper functions designed to clean,
+transform, and summarize tidy time series outputs such as those returned
+by boc_series().
+
+## 2. Prepare a sample dataset
+
+To keep the examples reproducible and avoid relying on any particular
+series having missing values, we retrieve a small FX dataset and then
+intentionally inject missing values to demonstrate filling methods.
+
+```{r}
+library(dplyr)
+
+fx <- boc_series(c("FXUSDCAD", "FXEURCAD"), start_date = "2023-01-01")
+head(fx)
+```
+
+Create a simulated missingness pattern (for demonstration only):
+
+```{r}
+set.seed(42)
+
+fx_sim <- fx %>%
+  arrange(series, date) %>%
+  group_by(series) %>%
+  mutate(
+    value_sim = value,
+    # randomly set some points to NA to simulate missingness
+    value_sim = ifelse(runif(n()) < 0.05, NA_real_, value_sim)
+  ) %>%
+  ungroup()
+
+fx_sim %>%
+  summarise(n = n(), n_missing = sum(is.na(value_sim)))
+```
+
+## 3. Align FX timestamps to a close date (optional)
+
+Some FX/IR datasets may come with intraday timestamps (e.g., a timestamp
+column). To prevent time-zone driven misalignment across markets,
+`boc_align_fx_close()` can bucket observations into a synthetic “close
+date” based on a chosen cutoff time zone and cutoff time.
+
+The function contains the following arguments:
+
+-   `data` A data.frame/tibble containing the time series.
+
+-   `datetime_col` Name of the POSIXct timestamp column (string).
+    Default "timestamp".
+
+-   `input_tz` Time zone used to interpret datetime_col if it is stored
+    as character (default "UTC").
+
+-   `cutoff_hour` Integer hour (0–23) of the daily close in cutoff_tz.
+
+-   `cutoff_min` Integer minute (0–59) of the daily close.
+
+-   `cutoff_tz` Olson time zone string for the close (default
+    "America/New_York").
+
+-   `new_col` Name of the output date column to create (string). Default
+    "fx_date".
+
+**Note**
+
+> The boc_series() output uses date directly, so alignment is not
+> required for the basic FX examples. This section is included for
+> workflows where users import intraday FX/IR timestamps and need a
+> consistent “close” date.
+
+## 4. Fill missing values
+
+When working with real-world time series, missing observations can occur due to holidays, reporting schedules, or gaps in data pipelines. The `boc_fill_missing()` helper fills missing values within each series using common methods.
+
+The function contains the following arguments:
+
+- `data`
+A data.frame/tibble containing the time series.
+
+- `value_col`
+Name of the numeric value column in data (string). Default "value".
+
+- `method`
+Filling method. One of "locf", "nocb", or "linear".
+
+- `order_col`
+Name of the ordering column (string), typically "date". Data are arranged by this column before filling.
+
+- `group_col`
+Name of the grouping column (string). Default "series".
+
+- `new_col`
+Name of the output column to create (string).
+
+### Section 4.1: LOCF (last observation carried forward)
+
+```{r}
+fx_locf <- boc_fill_missing(
+  data = fx_sim,
+  value_col = "value_sim",
+  method = "locf",
+  order_col = "date",
+  group_col = "series",
+  new_col = "filled_locf"
+)
+
+fx_locf %>% select(date, series, value_sim, filled_locf) %>% head(10)
+```
+
+### Section 4.2:Linear interpolation
+
+```{r}
+fx_linear <- boc_fill_missing(
+  data = fx_sim,
+  value_col = "value_sim",
+  method = "linear",
+  order_col = "date",
+  group_col = "series",
+  new_col = "filled_linear"
+)
+
+fx_linear %>% select(date, series, value_sim, filled_linear) %>% head(10)
+```
+
+## 5. Normalization (z-score, min-max, index)
+
+Normalization is useful when comparing series measured on different scales or when presenting multiple time series on one plot. The `boc_normalize()` helper normalizes values within each series.
+
+The function contains the following arguments:
+
+- `data`
+A data.frame/tibble containing the time series.
+
+- `value_col`
+Name of the numeric value column in data (string). Default "value".
+
+- `method`
+Normalization method. One of "zscore", "minmax", or "index".
+
+- `index_base`
+Base value used when method = "index" (default 100).
+
+- `group_col`
+Name of the grouping column (string). Default "series".
+
+- `new_col`
+Name of the output column to create (string).
+
+### Section 5.1: Index normalization to base 100
+
+```{r}
+fx_index <- boc_normalize(
+  data = fx_locf,
+  value_col = "filled_locf",
+  method = "index",
+  index_base = 100,
+  group_col = "series",
+  new_col = "index_100"
+)
+
+fx_index %>% select(date, series, filled_locf, index_100) %>% head(10)
+```
+
+## 6. Percent change (returns)
+
+Daily changes are often more interpretable than raw levels, especially for exchange rates and financial series. The `boc_percent_change()` helper computes percent changes (arithmetic) or log returns within each series.
+
+The function contains the following arguments:
+
+- `data`
+A data.frame/tibble containing the time series.
+
+- `value_col`
+Name of the numeric value column in data (string). Default "value".
+
+- `periods`
+Integer number of periods to lag when computing change (default 1).
+
+- `type`
+Return type. One of "arithmetic" or "log".
+
+- `order_col`
+Name of the ordering/date column (string). Data are arranged by this column before computing changes (default "date").
+
+- `group_col`
+Name of the grouping column (string). Default "series".
+
+- `new_col`
+Name of the output column to create (string).
+
+```{r}
+fx_ret <- boc_percent_change(
+  data = fx_locf,
+  value_col = "filled_locf",
+  periods = 1,
+  type = "log",
+  order_col = "date",
+  group_col = "series",
+  new_col = "log_ret"
+)
+
+fx_ret %>% select(date, series, filled_locf, log_ret) %>% head(10)
+```
+
+## 7. Rolling mean smoothing
+
+Rolling means are commonly used to smooth short-term noise and highlight trends. The `boc_rolling_mean()` helper computes a right-aligned moving average within each series.
+
+The function contains the following arguments:
+
+- `data`
+A data.frame/tibble containing the time series.
+
+- `value_col`
+Name of the numeric value column in data (string).
+
+- `window`
+Integer window size for the rolling mean (>= 1). Default 5.
+
+- `order_col`
+Name of the ordering/date column (string). Default "date".
+
+- `group_col`
+Name of the grouping column (string). Default "series".
+
+- `new_col`
+Name of the output column to create (string).
+
+```{r}
+fx_roll <- boc_rolling_mean(
+  data = fx_locf,
+  value_col = "filled_locf",
+  window = 10,
+  order_col = "date",
+  group_col = "series",
+  new_col = "ma10"
+)
+
+fx_roll %>% select(date, series, filled_locf, ma10) %>% head(10)
+```
+
+## 8. Summary statistics
+
+The boc_summary() helper computes common summary statistics for each series, including observation counts, missingness, date range, and basic distributional summaries.
+
+The function contains the following arguments:
+
+- `data`
+A data.frame/tibble containing the time series.
+
+- `value_col`
+Name of the numeric value column in data (string).
+
+- `order_col`
+Name of the ordering/date column in data (string), used to compute start/end range (default "date").
+
+- `group_col`
+Name of the grouping column (string). Default "series".
+
+```{r}
+summ <- boc_summary(
+  data = fx_sim,
+  value_col = "value_sim",
+  order_col = "date",
+  group_col = "series"
+)
+
+summ
+```
+
+## 9. Autocorrelation and correlation
+
+### Section 9.1: Autocorrelation by series
+
+`boc_autocorr()` computes autocorrelation values up to a chosen lag for each series.
+
+The function contains the following arguments:
+
+- `data`
+A data.frame/tibble containing the time series.
+
+- `value_col`
+Name of the numeric value column to compute autocorrelation on (string).
+
+- `lag_max`
+Maximum lag to compute (integer).
+
+- `group_col`
+Name of the grouping column (string). Default "series".
+
+```{r}
+acf_tbl <- boc_autocorr(
+  data = fx_locf,
+  value_col = "filled_locf",
+  lag_max = 10,
+  group_col = "series"
+)
+
+head(acf_tbl)
+```
+
+### Section 9.2: Correlation across series
+
+`boc_correlation()` computes a pairwise correlation matrix across multiple series after reshaping the data wide by date.
+
+The function contains the following arguments:
+
+- `data`
+A data frame containing at least `date`, `serie`s, and a numeric value column.
+
+- `value_col`
+Name of the numeric value column in `data` to use for correlation calculation (string). Default "value".
+
+```{r}
+cor_mat <- boc_correlation(
+  data = fx_locf %>% dplyr::select(date, series, value = filled_locf),
+  value_col = "value"
+)
+cor_mat
+```
+

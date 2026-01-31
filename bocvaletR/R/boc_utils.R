@@ -387,26 +387,31 @@ boc_autocorr <- function(data,
 #'   correlation calculation (string).
 #'
 #' @return A numeric correlation matrix with one row/column per series.
+#' @importFrom tidyr pivot_wider
 #' @export
 boc_correlation <- function(data, value_col = "value") {
 
   validate_data(data, c("date", "series", value_col))
   validate_numeric_column(data, value_col)
+
+  # clean series labels to avoid invisible whitespace issues
+  data <- data %>%
+    dplyr::mutate(series = trimws(as.character(series)))
+
   if (dplyr::n_distinct(data$series) < 2) {
     rlang::abort("Need at least two distinct series to compute a correlation matrix.")
   }
 
   safe_exec({
-    wide <- stats::reshape(
-      data = dplyr::select(data, date, series, val = dplyr::all_of(value_col)),
-      idvar = "date", timevar = "series", direction = "wide"
-    )
+    wide <- data %>%
+      dplyr::select(date, series, value = dplyr::all_of(value_col)) %>%
+      tidyr::pivot_wider(names_from = series, values_from = value)
+
     if (ncol(wide) < 3) {
       rlang::abort("Need at least two series to compute a correlation matrix.")
     }
+
     mat <- as.matrix(wide[, -1, drop = FALSE])
-    colnames(mat) <- sub("^val\\.", "", colnames(mat))
     stats::cor(mat, use = "pairwise.complete.obs")
   }, "boc_correlation failed")
 }
-
