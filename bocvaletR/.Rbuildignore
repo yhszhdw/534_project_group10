@@ -1,3 +1,5 @@
+^renv$
+^renv\.lock$
 ^bocvaletR\.Rproj$
 ^\.Rproj\.user$
 ^doc$

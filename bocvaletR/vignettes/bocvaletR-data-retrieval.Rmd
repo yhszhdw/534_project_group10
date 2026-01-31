@@ -1,8 +1,10 @@
 ---
-title: "1. bocvaletR_data_retrival"
-author: "Zihao Sheng"
-date: "2026-01-31"
-output: html_document
+title: "Data Retrieval with bocvaletR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data Retrieval with bocvaletR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 # bocvaletR package data retrieval
@@ -94,9 +96,12 @@ FX_RATE_DAILY$series
 
 ### 3. Retrieving data series using series IDs
 
-::: callout-note
-All Bank of Canada time series are uniquely identified by a **series ID**. These IDs can be obtained using `boc_list_series()` or extracted from the output of `boc_list_groups()` and `boc_groups()`. Once a valid series ID is available, the corresponding observations can be retrieved directly using the `boc_series()` function.
-:::
+> **Note**  
+> All Bank of Canada time series are uniquely identified by a **series ID**.
+> These IDs can be obtained using `boc_list_series()` or extracted from the
+> output of `boc_list_groups()` and `boc_groups()`. Once a valid series ID is
+> available, the corresponding observations can be retrieved directly using
+> the `boc_series()` function.
 
 The `boc_series()` function retrieves one or more data series given their corresponding series IDs. Series IDs uniquely identify each Bank of Canada time series and can be obtained using `boc_list_series()` or extracted from group-based queries.
 
@@ -143,9 +148,11 @@ head(fx_selected)
 
 ### 4. Monitoring foreign exchange updates with `boc_fx_rss()`
 
-::: callout-note
-In addition to retrieving historical time series data, bocvaletR provides access to the Bank of Canada foreign exchange RSS feed. This feed is designed for monitoring **recent updates** to exchange rate series rather than for retrieving long historical records.
-:::
+> **Note**  
+> In addition to retrieving historical time series data, bocvaletR provides
+> access to the Bank of Canada foreign exchange RSS feed. This feed is
+> designed for monitoring **recent updates** to exchange rate series rather
+> than for retrieving long historical records.
 
 The `boc_fx_rss()` function retrieves the latest foreign exchange updates published by the Bank of Canada. Unlike `boc_series()`, which returns complete time series observations, this function focuses on newly released or recently updated exchange rate information.
 
