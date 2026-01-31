@@ -1,4 +1,10 @@
 # bocvaletR
+
+## Code of Conduct
+
+This project adheres to a Code of Conduct. By participating, you are expected to uphold these standards.
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
+
 ## An R Wrapper for the Bank of Canada Valet API
 
 ---
