@@ -362,16 +362,17 @@ boc_autocorr <- function(data,
   safe_exec({
     data %>%
       dplyr::group_by(.data[[group_col]]) %>%
-      dplyr::summarise(
+      dplyr::group_modify(~ {
+        acf_vals <- stats::acf(.x[[value_col]],
+                               lag.max = lag_max,
+                               plot = FALSE,
+                               na.action = stats::na.omit)$acf[-1]
         tibble::tibble(
           lag = seq_len(lag_max),
-          acf = stats::acf(.data[[value_col]],
-                           lag.max = lag_max,
-                           plot = FALSE,
-                           na.action = na.omit)$acf[-1]
-        ),
-        .groups = "drop"
-      )
+          acf = acf_vals
+        )
+      }) %>%
+      dplyr::ungroup()
   }, "boc_autocorr failed")
 }
 
@@ -397,7 +398,7 @@ boc_correlation <- function(data, value_col = "value") {
 
   safe_exec({
     wide <- stats::reshape(
-      data = dplyr::select(data, date, series, val = .data[[value_col]]),
+      data = dplyr::select(data, date, series, val = dplyr::all_of(value_col)),
       idvar = "date", timevar = "series", direction = "wide"
     )
     if (ncol(wide) < 3) {
