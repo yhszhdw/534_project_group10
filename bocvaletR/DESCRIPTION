@@ -2,7 +2,7 @@ Package: bocvaletR
 Title: What the Package Does (One Line, Title Case)
 Version: 0.9.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    c(person("Zihao", "Sheng",email = "1844716292@qq.com",role = c("aut", "cre")))
 Depends: R (>= 4.1.0)
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
