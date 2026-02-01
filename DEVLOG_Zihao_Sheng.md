@@ -173,3 +173,13 @@ Completed all API-related unit testing and finalized the continuous integration 
 - Add documentation describing the testing strategy and CI workflow to the project README
 - Expand test coverage to include non-API utility functions
 - Perform final review and prepare the package for release
+
+## January 31 - 
+
+- Added new vignettes to the bocvaletR package, documenting data retrieval, preprocessing, and summary workflows to improve usability and reproducibility.
+
+- Finalized documentation and prepared the v0.9.0 release for submission.
+
+- Submitted bocvaletR v0.9.0 to CRAN and completed all required checks.
+
+- The package is currently under CRAN review, awaiting feedback from the CRAN team.

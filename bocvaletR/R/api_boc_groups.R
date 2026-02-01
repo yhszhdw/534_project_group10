@@ -2,7 +2,7 @@
 #'
 #' @param group Group ID (e.g. "FX_RATES_DAILY")
 #' @param as Return format:
-#'   - "list": list(group = <tibble>, series = <tibble>)
+#'   - "list": list(group = \code{tibble}, series = \code{tibble})
 #'   - "series_df": only the series tibble (convenient for piping into boc_series)
 #'   - "group_df": only the group metadata tibble
 #'

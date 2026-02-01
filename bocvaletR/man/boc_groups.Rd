@@ -11,7 +11,7 @@ boc_groups(group, as = c("list", "series_df", "group_df"))
 
 \item{as}{Return format:
 \itemize{
-\item "list": list(group = \if{html}{\out{<tibble>}}, series = \if{html}{\out{<tibble>}})
+\item "list": list(group = \code{tibble}, series = \code{tibble})
 \item "series_df": only the series tibble (convenient for piping into boc_series)
 \item "group_df": only the group metadata tibble
 }}

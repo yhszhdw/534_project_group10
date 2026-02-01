@@ -1,12 +1,19 @@
 Package: bocvaletR
 Title: Bank of Canada Valet API R Interface
-Version: 0.9.1
+Version: 0.9.2
 Authors@R: 
-    c(person("Zihao", "Sheng",email = "1844716292@qq.com",role = c("aut", "cre")))
+    c(
+        person("Zihao", "Sheng",email = "1844716292@qq.com",role = c("aut", "cre")),
+        person("Wei", "Li", role = "aut"),
+        person("Inaara", "Rajwani", role = "aut")
+    )
 Depends: R (>= 4.1.0)
-Description: The package provides a lightweight R interface to the Bank of Canada Valet API,
-    including tools for data retrieval, preprocessing, normalization, and summary
-    of time series data.
+Description: Provides a tidy R interface to the Bank of Canada Valet API for
+    discovering series and groups, retrieving time series observations, and
+    monitoring foreign exchange updates via the FX RSS feed. Includes helper
+    functions for preprocessing and summary tasks such as filling missing
+    values, normalization, returns, rolling smoothing, and correlation
+    diagnostics.
 License: MIT + file LICENSE
 Imports:
     dplyr,
@@ -21,7 +28,6 @@ Imports:
     xml2,
     ggplot2
 Encoding: UTF-8
-Maintainer: Zihao Sheng <1844716292@qq.com>
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
