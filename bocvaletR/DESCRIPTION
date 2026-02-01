@@ -5,8 +5,8 @@ Authors@R:
     c(person("Zihao", "Sheng",email = "1844716292@qq.com",role = c("aut", "cre")))
 Depends: R (>= 4.1.0)
 Description: The package provides a lightweight R interface to the Bank of Canada Valet API,
-including tools for data retrieval, preprocessing, normalization, and summary
-of time series data.
+    including tools for data retrieval, preprocessing, normalization, and summary
+    of time series data.
 License: MIT + file LICENSE
 Imports:
     dplyr,
