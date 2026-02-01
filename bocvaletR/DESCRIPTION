@@ -19,6 +19,7 @@ Imports:
     xml2,
     ggplot2
 Encoding: UTF-8
+Maintainer: Zihao Sheng <1844716292@qq.com>
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
