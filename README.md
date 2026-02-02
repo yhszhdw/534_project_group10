@@ -44,8 +44,11 @@ to analysis and visualization.
 ### Development version
 
 ```r
-# install.packages("remotes")
-remotes::install_github("YOUR_GITHUB_USERNAME/bocvaletR")
+install.packages(
+  "https://github.com/yhszhdw/534_project_group10/releases/download/v1.0.0/bocvaletR_1.0.0.tar.gz",
+  repos = NULL,
+  type = "source"
+)
 ```
 ## 3. Quick Start
 
