@@ -1,0 +1,311 @@
+---
+title: "Data Visualization with bocvaletR"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 4
+vignette: >
+  %\VignetteIndexEntry{Data Visualization with bocvaletR}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# bocvaletR package data visualization
+
+```{r}
+library(bocvaletR)
+```
+
+### 1. Overview
+
+This vignette introduces the visualization tools provided by bocvaletR.
+It focuses on transforming time series data retrieved from the Bank of
+Canada Valet API into clear and informative graphics.
+
+The vignette is divided into two main parts:
+
+Visualization of time series data using `boc_plot()`
+
+Visualization of risk measures using `risk_plot_var_cvar()`
+
+### 2. Visualizing time series with boc_plot()
+
+The `boc_plot()` function is the main time series visualization helper
+in bocvaletR. It is designed to work directly with the output of
+`boc_series()` and supports both data structures returned by that
+function:
+
+-   **Concatenated format** (`concat = TRUE`, default): a single tibble
+    with columns such as `date`, `series`, and `value`.
+-   **Non-concatenated format** (`concat = FALSE`): a named list of
+    tibbles, one per series.
+
+The function is backward compatible with the basic single-series
+workflow: calling `boc_plot(df)` with no additional arguments produces a
+clean line chart similar to the original version.
+
+The function contains the following arguments:
+
+-   `df`\
+    A tibble returned by `boc_series(concat = TRUE)` or a named list of
+    tibbles returned by `boc_series(concat = FALSE)`.\
+    The input must contain a `date` column and a numeric `value` column.
+    If a `series` column is not present, it will be created
+    automatically.
+
+-   `mode`\
+    A character string controlling how multiple series are displayed.\
+    The available options are:
+
+    -   `"auto"` (default): behaves like the original single-series plot
+        when only one series is present, and switches to an overlay plot
+        when multiple series are provided.
+    -   `"overlay"`: plots multiple series on the same axes and
+        distinguishes them by color.
+    -   `"facet"`: plots one panel per series using a faceted layout.
+    -   `"separate"`: returns a named list of ggplot objects, one per
+        series.
+
+-   `na_rm`\
+    Logical. If `TRUE` (default), rows with missing `date` or `value`
+    are removed before plotting. This is useful when series contain
+    occasional gaps.
+
+-   `title`\
+    Optional plot title. If `NULL` (default), a sensible title is chosen
+    automatically depending on whether a single series or multiple
+    series are plotted.
+
+-   `xlab`, `ylab`\
+    Axis labels for the x-axis and y-axis. Defaults are `"Date"` and
+    `"Value"`.
+
+-   `legend`\
+    Logical. For overlay plots, controls whether the legend is
+    displayed. The default value is `TRUE`. This argument is ignored for
+    single-series plots (where no legend is needed) and for faceted
+    plots (where the legend is typically unnecessary).
+
+**Note**
+
+> `boc_plot()` focuses on visualization. If missing values must be
+> imputed (e.g., LOCF or interpolation), use `boc_fill_missing()` first
+> and then plot the resulting series.
+
+#### Section 2.1: Basic time series visualization
+
+The simplest use case is plotting a single Bank of Canada time series.
+This requires only a valid series ID.
+
+```{r}
+fx_usd <- boc_series("FXUSDCAD")
+head(fx_usd)
+```
+
+We can visualize the series directly using `boc_plot()`:
+
+```{r}
+boc_plot(fx_usd)
+```
+
+By default, `boc_plot()` produces a clean line chart with a minimal
+theme, suitable for exploratory analysis and reporting.
+
+#### Section 2.2: Visualizing multiple series (default behavior)
+
+Multiple series can be retrieved by providing a vector of series IDs to
+`boc_series()`.
+
+```{r}
+fx_multi <- boc_series(c("FXUSDCAD", "FXEURCAD"))
+head(fx_multi)
+```
+
+When multiple series are present, `boc_plot()` automatically overlays
+them in a single plot and distinguishes series using color:
+
+```{r}
+boc_plot(fx_multi)
+```
+
+#### Section 2.3: Faceted visualization
+
+For clearer separation between series, especially when they have
+different scales or volatility levels, a faceted layout can be used.
+
+```{r}
+boc_plot(fx_multi, mode = "facet")
+```
+
+In this mode, each series is displayed in its own panel while sharing a
+common time axis.
+
+#### Section 2.4: Separate plots for each series
+
+In some workflows, it is preferable to work with independent plot
+objects, for example when exporting figures individually or arranging
+them manually.
+
+Setting mode = "separate" returns a named list of ggplot objects, one
+per series:
+
+```{r}
+plots <- boc_plot(fx_multi, mode = "separate")
+names(plots)
+```
+
+Each element of the list is a standard ggplot object:
+
+```{r}
+plots$FXUSDCAD
+```
+
+#### Section 2.5: Working with non-concatenated data
+
+The `boc_series()` function can also return a named list of tibbles by
+setting concat = FALSE. This structure is fully supported by
+`boc_plot()`.
+
+```{r}
+fx_list <- boc_series(
+  c("FXUSDCAD", "FXEURCAD"),
+  concat = FALSE
+)
+
+str(fx_list, max.level = 1)
+```
+
+The same plotting modes apply:
+
+```{r}
+boc_plot(fx_list)                 # overlay (default)
+boc_plot(fx_list, mode = "facet")
+boc_plot(fx_list, mode = "separate")
+```
+
+#### Section 2.6: Customizing plot labels and legend
+
+Common plot labels can be customized directly through function
+arguments:
+
+```{r}
+boc_plot(
+  fx_multi,
+  title = "Daily Exchange Rates against CAD",
+  xlab  = "Date",
+  ylab  = "Exchange Rate"
+)
+```
+
+For overlay plots, the legend can be hidden if desired:
+
+```{r}
+boc_plot(fx_multi, legend = FALSE)
+```
+
+### 3. Visualizing risk metrics (VaR / CVaR)
+
+This section demonstrates a basic risk visualization workflow using
+historical simulation Value-at-Risk (VaR) and Conditional VaR (CVaR). We
+start from Bank of Canada time series data retrieved via `boc_series()`
+and compute daily log returns before computing and visualizing tail
+risk.
+
+#### Section 3.1: Retrieve a price/level series for returns
+
+We first retrieve a daily FX series. The example below uses USD/CAD.
+
+```{r}
+fx_usd <- boc_series("FXUSDCAD", start_date = "2023-01-01")
+head(fx_usd)
+```
+
+#### Section 3.2: Compute daily log returns
+
+Risk metrics are typically computed on returns rather than raw levels.
+Here we compute daily log returns from the value column.
+
+```{r}
+# Ensure data are ordered by date
+fx_usd <- fx_usd[order(fx_usd$date), ]
+
+# Step 1: (Optional) Fill missing values in levels
+# This step is shown for completeness; FX series typically have few missing values.
+fx_filled <- boc_fill_missing(
+  data      = fx_usd,
+  value_col = "value",
+  method    = "locf",
+  order_col = "date",
+  group_col = "series",
+  new_col   = "value_filled"
+)
+
+# Step 2: Compute daily log returns using helper
+fx_ret <- boc_percent_change(
+  data      = fx_filled,
+  value_col = "value_filled",
+  periods   = 1,
+  type      = "log",
+  order_col = "date",
+  group_col = "series",
+  new_col   = "log_ret"
+)
+
+# Extract return vector for risk analysis
+ret <- fx_ret$log_ret
+ret <- ret[is.finite(ret)]
+length(ret)
+```
+
+#### Section 3.3: Compute historical VaR and CVaR
+
+The `risk_var_cvar()` helper computes historical VaR and CVaR for a
+numeric return vector.
+
+```{r}
+stats_95 <- risk_var_cvar(ret, alpha = 0.05)
+stats_95
+```
+
+The returned list includes:
+
+-   `var`: the historical VaR at level alpha
+
+-   `cvar`: the historical CVaR at level alpha
+
+#### Section 3.4: Visualize VaR and CVaR
+
+The `risk_plot_var_cvar()` helper visualizes the return distribution and
+overlays VaR/CVaR as vertical reference lines.
+
+```{r}
+vis <- risk_plot_var_cvar(
+  ret,
+  alpha = 0.05,
+  title = "Historical VaR / CVaR for FXUSDCAD (daily log returns)"
+)
+
+vis$plot
+```
+
+The dashed line corresponds to VaR and the solid line corresponds to
+CVaR. Tail observations are also highlighted using a rug plot.
+
+#### Section 3.5: Generate a text interpretation
+
+For reporting, `risk_text_summary()` creates a short plain-language
+summary based on the computed statistics.
+
+```{r}
+txt <- risk_text_summary(
+  n     = length(ret),
+  alpha = 0.05,
+  var   = vis$var,
+  cvar  = vis$cvar
+)
+
+cat(txt)
+```
