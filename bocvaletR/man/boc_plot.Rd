@@ -4,13 +4,39 @@
 \alias{boc_plot}
 \title{Plot Bank of Canada time series}
 \usage{
-boc_plot(df)
+boc_plot(
+  df,
+  mode = c("auto", "overlay", "facet", "separate"),
+  na_rm = TRUE,
+  title = NULL,
+  xlab = "Date",
+  ylab = "Value",
+  legend = TRUE
+)
 }
 \arguments{
-\item{df}{A tibble returned by boc_series()}
+\item{df}{A tibble returned by boc_series(concat = TRUE) OR
+a named list of tibbles returned by boc_series(concat = FALSE).}
+
+\item{mode}{How to plot multiple series:
+\itemize{
+\item "auto" (default): single-series behaves like old boc_plot(); multi-series uses "overlay"
+\item "overlay": all series on one axes (colored by series)
+\item "facet": facet by series (one figure, many panels)
+\item "separate": return a named list of ggplots (one per series)
+}}
+
+\item{na_rm}{Logical; if TRUE, drop rows with NA in date/value (default TRUE).}
+
+\item{title}{Plot title. If NULL, use a sensible default.}
+
+\item{xlab, ylab}{Axis labels.}
+
+\item{legend}{Logical; show legend for overlay plots (default TRUE).}
 }
 \value{
-A ggplot object
+A ggplot object (mode = "auto"/"overlay"/"facet"),
+or a named list of ggplot objects (mode = "separate").
 }
 \description{
 Plot Bank of Canada time series

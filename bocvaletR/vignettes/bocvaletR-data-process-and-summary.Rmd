@@ -92,27 +92,26 @@ The function contains the following arguments:
 
 ## 4. Fill missing values
 
-When working with real-world time series, missing observations can occur due to holidays, reporting schedules, or gaps in data pipelines. The `boc_fill_missing()` helper fills missing values within each series using common methods.
+When working with real-world time series, missing observations can occur
+due to holidays, reporting schedules, or gaps in data pipelines. The
+`boc_fill_missing()` helper fills missing values within each series
+using common methods.
 
 The function contains the following arguments:
 
-- `data`
-A data.frame/tibble containing the time series.
+-   `data` A data.frame/tibble containing the time series.
 
-- `value_col`
-Name of the numeric value column in data (string). Default "value".
+-   `value_col` Name of the numeric value column in data (string).
+    Default "value".
 
-- `method`
-Filling method. One of "locf", "nocb", or "linear".
+-   `method` Filling method. One of "locf", "nocb", or "linear".
 
-- `order_col`
-Name of the ordering column (string), typically "date". Data are arranged by this column before filling.
+-   `order_col` Name of the ordering column (string), typically "date".
+    Data are arranged by this column before filling.
 
-- `group_col`
-Name of the grouping column (string). Default "series".
+-   `group_col` Name of the grouping column (string). Default "series".
 
-- `new_col`
-Name of the output column to create (string).
+-   `new_col` Name of the output column to create (string).
 
 ### Section 4.1: LOCF (last observation carried forward)
 
@@ -146,27 +145,25 @@ fx_linear %>% select(date, series, value_sim, filled_linear) %>% head(10)
 
 ## 5. Normalization (z-score, min-max, index)
 
-Normalization is useful when comparing series measured on different scales or when presenting multiple time series on one plot. The `boc_normalize()` helper normalizes values within each series.
+Normalization is useful when comparing series measured on different
+scales or when presenting multiple time series on one plot. The
+`boc_normalize()` helper normalizes values within each series.
 
 The function contains the following arguments:
 
-- `data`
-A data.frame/tibble containing the time series.
+-   `data` A data.frame/tibble containing the time series.
 
-- `value_col`
-Name of the numeric value column in data (string). Default "value".
+-   `value_col` Name of the numeric value column in data (string).
+    Default "value".
 
-- `method`
-Normalization method. One of "zscore", "minmax", or "index".
+-   `method` Normalization method. One of "zscore", "minmax", or
+    "index".
 
-- `index_base`
-Base value used when method = "index" (default 100).
+-   `index_base` Base value used when method = "index" (default 100).
 
-- `group_col`
-Name of the grouping column (string). Default "series".
+-   `group_col` Name of the grouping column (string). Default "series".
 
-- `new_col`
-Name of the output column to create (string).
+-   `new_col` Name of the output column to create (string).
 
 ### Section 5.1: Index normalization to base 100
 
@@ -185,30 +182,29 @@ fx_index %>% select(date, series, filled_locf, index_100) %>% head(10)
 
 ## 6. Percent change (returns)
 
-Daily changes are often more interpretable than raw levels, especially for exchange rates and financial series. The `boc_percent_change()` helper computes percent changes (arithmetic) or log returns within each series.
+Daily changes are often more interpretable than raw levels, especially
+for exchange rates and financial series. The `boc_percent_change()`
+helper computes percent changes (arithmetic) or log returns within each
+series.
 
 The function contains the following arguments:
 
-- `data`
-A data.frame/tibble containing the time series.
+-   `data` A data.frame/tibble containing the time series.
 
-- `value_col`
-Name of the numeric value column in data (string). Default "value".
+-   `value_col` Name of the numeric value column in data (string).
+    Default "value".
 
-- `periods`
-Integer number of periods to lag when computing change (default 1).
+-   `periods` Integer number of periods to lag when computing change
+    (default 1).
 
-- `type`
-Return type. One of "arithmetic" or "log".
+-   `type` Return type. One of "arithmetic" or "log".
 
-- `order_col`
-Name of the ordering/date column (string). Data are arranged by this column before computing changes (default "date").
+-   `order_col` Name of the ordering/date column (string). Data are
+    arranged by this column before computing changes (default "date").
 
-- `group_col`
-Name of the grouping column (string). Default "series".
+-   `group_col` Name of the grouping column (string). Default "series".
 
-- `new_col`
-Name of the output column to create (string).
+-   `new_col` Name of the output column to create (string).
 
 ```{r}
 fx_ret <- boc_percent_change(
@@ -226,27 +222,25 @@ fx_ret %>% select(date, series, filled_locf, log_ret) %>% head(10)
 
 ## 7. Rolling mean smoothing
 
-Rolling means are commonly used to smooth short-term noise and highlight trends. The `boc_rolling_mean()` helper computes a right-aligned moving average within each series.
+Rolling means are commonly used to smooth short-term noise and highlight
+trends. The `boc_rolling_mean()` helper computes a right-aligned moving
+average within each series.
 
 The function contains the following arguments:
 
-- `data`
-A data.frame/tibble containing the time series.
+-   `data` A data.frame/tibble containing the time series.
 
-- `value_col`
-Name of the numeric value column in data (string).
+-   `value_col` Name of the numeric value column in data (string).
 
-- `window`
-Integer window size for the rolling mean (>= 1). Default 5.
+-   `window` Integer window size for the rolling mean (\>= 1). Default
+    5.
 
-- `order_col`
-Name of the ordering/date column (string). Default "date".
+-   `order_col` Name of the ordering/date column (string). Default
+    "date".
 
-- `group_col`
-Name of the grouping column (string). Default "series".
+-   `group_col` Name of the grouping column (string). Default "series".
 
-- `new_col`
-Name of the output column to create (string).
+-   `new_col` Name of the output column to create (string).
 
 ```{r}
 fx_roll <- boc_rolling_mean(
@@ -263,21 +257,20 @@ fx_roll %>% select(date, series, filled_locf, ma10) %>% head(10)
 
 ## 8. Summary statistics
 
-The boc_summary() helper computes common summary statistics for each series, including observation counts, missingness, date range, and basic distributional summaries.
+The boc_summary() helper computes common summary statistics for each
+series, including observation counts, missingness, date range, and basic
+distributional summaries.
 
 The function contains the following arguments:
 
-- `data`
-A data.frame/tibble containing the time series.
+-   `data` A data.frame/tibble containing the time series.
 
-- `value_col`
-Name of the numeric value column in data (string).
+-   `value_col` Name of the numeric value column in data (string).
 
-- `order_col`
-Name of the ordering/date column in data (string), used to compute start/end range (default "date").
+-   `order_col` Name of the ordering/date column in data (string), used
+    to compute start/end range (default "date").
 
-- `group_col`
-Name of the grouping column (string). Default "series".
+-   `group_col` Name of the grouping column (string). Default "series".
 
 ```{r}
 summ <- boc_summary(
@@ -294,21 +287,19 @@ summ
 
 ### Section 9.1: Autocorrelation by series
 
-`boc_autocorr()` computes autocorrelation values up to a chosen lag for each series.
+`boc_autocorr()` computes autocorrelation values up to a chosen lag for
+each series.
 
 The function contains the following arguments:
 
-- `data`
-A data.frame/tibble containing the time series.
+-   `data` A data.frame/tibble containing the time series.
 
-- `value_col`
-Name of the numeric value column to compute autocorrelation on (string).
+-   `value_col` Name of the numeric value column to compute
+    autocorrelation on (string).
 
-- `lag_max`
-Maximum lag to compute (integer).
+-   `lag_max` Maximum lag to compute (integer).
 
-- `group_col`
-Name of the grouping column (string). Default "series".
+-   `group_col` Name of the grouping column (string). Default "series".
 
 ```{r}
 acf_tbl <- boc_autocorr(
@@ -323,15 +314,16 @@ head(acf_tbl)
 
 ### Section 9.2: Correlation across series
 
-`boc_correlation()` computes a pairwise correlation matrix across multiple series after reshaping the data wide by date.
+`boc_correlation()` computes a pairwise correlation matrix across
+multiple series after reshaping the data wide by date.
 
 The function contains the following arguments:
 
-- `data`
-A data frame containing at least `date`, `serie`s, and a numeric value column.
+-   `data` A data frame containing at least `date`, `serie`s, and a
+    numeric value column.
 
-- `value_col`
-Name of the numeric value column in `data` to use for correlation calculation (string). Default "value".
+-   `value_col` Name of the numeric value column in `data` to use for
+    correlation calculation (string). Default "value".
 
 ```{r}
 cor_mat <- boc_correlation(
@@ -340,4 +332,3 @@ cor_mat <- boc_correlation(
 )
 cor_mat
 ```
-

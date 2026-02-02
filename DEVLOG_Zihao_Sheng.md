@@ -183,3 +183,64 @@ Completed all API-related unit testing and finalized the continuous integration 
 - Submitted bocvaletR v0.9.0 to CRAN and completed all required checks.
 
 - The package is currently under CRAN review, awaiting feedback from the CRAN team.
+
+## February 1 — Visualization expansion and documentation finalization
+
+### Summary
+Extended the visualization layer of bocvaletR and finalized user-facing
+documentation. This phase focused on upgrading plotting functionality,
+adding applied risk visualization workflows, and aligning the README and
+vignettes with the completed feature set of the package.
+
+---
+
+### Key Work
+
+- **Upgraded `boc_plot()`** to support flexible multi-series visualization:
+  - Added support for concatenated and non-concatenated (`concat = FALSE`)
+    inputs returned by `boc_series()`
+  - Implemented multiple display modes (`auto`, `overlay`, `facet`,
+    `separate`) while preserving backward compatibility
+  - Improved input validation and missing-value handling for plotting
+    workflows
+  - Added comprehensive unit tests covering single-series and
+    multi-series use cases
+
+- **Implemented risk visualization utilities**, including:
+  - Historical VaR and CVaR computation via `risk_var_cvar()`
+  - Histogram- and density-based VaR/CVaR visualization via
+    `risk_plot_var_cvar()`
+  - Text-based interpretation summaries using `risk_text_summary()`
+  - End-to-end FX risk analysis workflow using real Bank of Canada data
+
+- **Added new vignettes** documenting visualization workflows:
+  - Time-series visualization with `boc_plot()`
+  - Integrated preprocessing, transformation, and plotting pipelines
+  - Applied FX risk visualization using VaR and CVaR
+
+- **Revised and finalized the README**:
+  - Converted the original project proposal into a completed,
+    user-oriented README
+  - Added Quick Start examples, core functionality overview, and applied
+    risk visualization examples
+  - Ensured consistency between README examples, vignettes, and exported
+    functions
+
+---
+
+### Current Status
+
+- ✅ Visualization and risk analysis features fully implemented
+- ✅ All documentation (README, function docs, vignettes) aligned with the
+  final API
+- ✅ Unit tests updated to cover new plotting and risk functions
+- ✅ Package feature set now complete for initial public release
+
+---
+
+### Next Steps
+
+- Monitor CRAN review feedback and address any requested changes
+- Perform minor refinements based on user feedback after release
+- Consider future extensions (e.g., additional risk metrics or
+  higher-frequency data support)

@@ -5,197 +5,229 @@
 This project adheres to a Code of Conduct. By participating, you are expected to uphold these standards.
 See [CODE_OF_CONDUCT.md](inst/CODE_OF_CONDUCT.md) for details.
 
+---
+
 ## An R Wrapper for the Bank of Canada Valet API
 
----
+**bocvaletR** is a modern, tidyverse-oriented R package that provides
+reliable, analysis-ready access to the
+[Bank of Canada Valet API](https://www.bankofcanada.ca/valet/docs).
 
-## 1. Project Overview
-
-This project proposes the development of **bocvaletR**, an R package that provides a modern, tidyverse-oriented wrapper for the Bank of Canada Valet API. The package is designed to allow R users to access official Canadian financial and economic time-series data through concise, well-documented functions, without manually constructing HTTP requests or parsing raw JSON responses.
-
-While R packages that interface with the Valet API already exist, **bocvaletR** aims to go beyond basic data retrieval by focusing on **reliability, workflow integration, and analysis-ready outputs**. The target users include economists, data scientists, and finance students who rely on reproducible and efficient workflows in R for analysis and visualization.
-
----
-
-## 2. Motivation and Background
-
-### 2.1 The Bank of Canada Valet API
-
-The [Bank of Canada Valet API](https://www.bankofcanada.ca/valet/docs) is a comprehensive, RESTful web service that provides programmatic access to authoritative Canadian financial and economic time-series data maintained by the Bank of Canada. The API is designed for reliability, scalability, and public accessibility.
-
-**Key Features of the Valet API:**
-
-- **Data Coverage**: The API provides access to over 900 distinct time series, organized hierarchically into groups including:
-  - Exchange rates (CAD/USD, CAD/EUR, etc.)
-  - Interest rates (policy rates, bond yields, mortgage rates)
-  - Economic indicators (inflation, employment, GDP measures)
-  - Financial market data (equity indices, commodity prices)
-  
-- **Data Frequency**: Series are available at various frequencies (daily, weekly, monthly, quarterly, annual)
-
-- **Historical Depth**: Most series extend back several decades, enabling long-horizon macroeconomic analysis
-
-- **API Design**: The Valet API follows RESTful principles with:
-  - Multiple endpoints for different query types (series lookup, metadata retrieval, data access)
-  - JSON response format
-  - Optional filtering by date range, frequency, and observation count
-  - Rate limiting and robust error handling
-
-- **Use Cases**: The API serves economists, data scientists, finance professionals, students, and policy researchers conducting academic analysis, investment research, risk assessment, and economic forecasting
-
-### 2.2 Existing Limitations and Motivation for bocvaletR
-
-Although existing R packages (e.g., community-developed Valet API clients: https://cran.r-project.org/web/packages/valet/index.html) already provide access to this API, they have several limitations:
-
-- **Limited Downstream Integration**: They primarily focus on **basic data retrieval**, with limited support for downstream analysis workflows and data cleaning
-- **API Edge Cases**: Some API behaviors (such as date filtering for grouped series) are **inconsistent or unreliable**, requiring users to manually clean and validate results
-- **Missing Utilities**: Limited tooling exists for **metadata exploration**, **series alignment**, **batch processing**, and **workflow-level utilities**
-- **No Visualization Support**: Visualization, caching, and reproducibility features are minimal or absent
-- **Documentation Gaps**: Documentation and examples tend to focus on API usage rather than applied economic analysis
-
-As a result, users often need to write substantial additional code for data validation, transformation, plotting, and repeated API calls—duplicating effort and introducing potential inconsistencies.
-
-### 2.3 bocvaletR: Extending Rather Than Duplicating
-
-**bocvaletR** is motivated by the goal of addressing these gaps. Rather than duplicating basic API access functionality, the package is designed to **extend and improve upon existing Valet API wrappers** by offering:
-
-- **Robust Error Handling**: More reliable and consistent handling of API edge cases, with client-side fixes for known limitations
-- **Tidy Outputs**: Analysis-ready outputs that integrate naturally with tidyverse workflows (dplyr, ggplot2, etc.)
-- **Time-Series Utilities**: Lightweight but high-impact utilities for common time-series tasks (normalization, rolling statistics, correlation analysis)
-- **Publication-Ready Visualization**: Built-in plotting functions optimized for economic data
-- **Comprehensive Documentation**: Clear documentation and vignettes that emphasize reproducible economic analysis workflows
-
-This approach makes the project both **practically useful** for R practitioners and well-suited as a course project demonstrating applied software engineering, API design, and data analysis principles.
+The package goes beyond basic API access by supporting **robust data
+retrieval**, **time-series preprocessing**, and **publication-ready
+visualization**, making it suitable for economists, data scientists, and
+finance students working in reproducible R workflows.
 
 ---
 
-## 3. Project Objectives
+## 1. Overview
 
-The primary goal is to design and implement a fully functional R package that improves upon existing Valet API wrappers by:
+The Bank of Canada Valet API offers programmatic access to hundreds of
+official Canadian financial and economic time series, including exchange
+rates, interest rates, and macroeconomic indicators.
 
-- Wrapping the core endpoints of the Bank of Canada Valet API
-- Providing consistent and reliable data retrieval, including client-side fixes for known API limitations
-- Returning data in tidy, analysis-ready formats by default
-- Supporting common analytical workflows through helper utilities and visualization tools
-- Following best practices for R package development, testing, and documentation
+While existing R clients for the Valet API focus primarily on raw data
+retrieval, **bocvaletR** emphasizes:
+
+- Reliability and consistent handling of API edge cases
+- Tidy, analysis-ready outputs by default
+- Seamless integration with tidyverse workflows
+- Lightweight but practical tools for time-series analysis and visualization
+
+The package is designed to support complete workflows from data discovery
+to analysis and visualization.
 
 ---
 
-## 4. Package Design and Core Functionality
+## 2. Installation
 
-### 4.1 Data Retrieval Functions
+### Development version
 
-The package will expose a small set of high-level functions for data access:
+```r
+# install.packages("remotes")
+remotes::install_github("YOUR_GITHUB_USERNAME/bocvaletR")
+```
+## 3. Quick Start
+
+### 3.1 Retrieve a single time series
+
+```r
+library(bocvaletR)
+
+fx_usd <- boc_series("FXUSDCAD", start_date = "2023-01-01")
+head(fx_usd)
+```
+
+### 3.2 Retrieve multiple series
+
+```r
+fx_multi <- boc_series(c("FXUSDCAD", "FXEURCAD"))
+head(fx_multi)
+```
+
+### 3.3 Plot time series
+
+```r
+boc_plot(fx_usd)
+boc_plot(fx_multi)                 # overlay
+boc_plot(fx_multi, mode = "facet") # faceted comparison
+```
+
+## 4. Core Functionality
+
+### 4.1 Data Retrieval
+
+High-level functions wrap the core Valet API endpoints:
 
 ```r
 boc_series()        # Retrieve one or more time series
-boc_group()         # Retrieve all series within a group
-boc_list()          # List available series or groups
-boc_series_info()   # Retrieve metadata for a series
+boc_groups()        # Retrieve all series within a group
+boc_list_series()   # List available series metadata
+boc_list_groups()   # List available groups
 ```
 
-These functions will:
+These functions provide:
 
-- Support date range filtering, including consistent client-side filtering when API behavior is unreliable
-- Allow multiple series to be queried in a single call
-- Return results as tidy tibbles with stable column names and types
-- Validate inputs and handle API errors with clear, informative messages
+- Support for multiple series in a single call  
+- Consistent date filtering  
+- Tidy tibble outputs with stable column names  
+- Informative error messages for invalid requests  
 
-A low-level internal function (`boc_request()`) will manage HTTP requests, retries, and response parsing.
+---
 
-### 4.2 Visualization Support
+### 4.2 Time-Series Utilities
 
-To support exploratory and applied analysis, the package will include lightweight plotting helpers:
-
-```r
-boc_plot()          # Single or multi-series time series plots
-boc_plot_group()    # Grouped or faceted comparisons
-```
-
-These functions will return ggplot2 objects that are publication-ready by default but fully customizable by the user.
-
-### 4.3 Basic Data Utilities
-
-To move beyond simple data access, bocvaletR will include helper functions that support common time-series workflows:
+To support downstream analysis, bocvaletR includes helper functions for
+common time-series operations:
 
 ```r
-boc_normalize()        # Scaling and normalization (Z-score, percentage change)
 boc_fill_missing()     # Missing value handling (LOCF, interpolation)
-boc_summary()          # Descriptive statistics
-boc_percent_change()   # Period-over-period percentage change
+boc_normalize()        # Normalization (z-score, min-max, index)
+boc_percent_change()   # Arithmetic and log returns
 boc_rolling_mean()     # Rolling averages
-boc_autocorr()         # Autocorrelation analysis
-boc_correlation()      # Multi-series correlation matrices
-boc_align_fx_close()   # Align FX/IR timestamps to a consistent daily close (time zone aware)
+boc_summary()          # Summary statistics
+boc_autocorr()         # Autocorrelation by series
+boc_correlation()      # Cross-series correlation matrices
+boc_align_fx_close()   # Time-zone aware FX close alignment
+```
+These helpers are designed to complement tidyverse tools rather than
+replace them, enabling clear, readable, and reproducible analysis
+pipelines.
+
+### 4.3 Visualization
+
+The package provides built-in visualization helpers for exploratory and
+applied analysis:
+
+```r
+boc_plot()                # Time series visualization
+risk_var_cvar()           # Historical VaR / CVaR computation
+risk_plot_var_cvar()      # VaR / CVaR visualization
+risk_text_summary()       # Textual interpretation of risk metrics
 ```
 
-These utilities are intentionally lightweight and designed to complement, not replace, existing tidyverse tools. Together, they distinguish bocvaletR from existing Valet API wrappers by supporting complete analysis workflows.
+All plotting functions return ggplot2 objects and can be further
+customized using standard ggplot2 layers.
 
-**FX/IR time-zone caution:** Cross-market series can settle at different local times (e.g., London vs. New York). Use `boc_align_fx_close()` to bucket timestamps to a common "close" date (default 17:00 America/New_York) before computing daily returns to avoid off-by-one-day errors or delayed outputs.
+## 5. Example: FX Risk Visualization
+
+This example demonstrates a simple end-to-end risk analysis workflow
+using daily foreign exchange data retrieved from the Bank of Canada
+Valet API. The workflow follows the same design philosophy used
+throughout bocvaletR: retrieve data, apply lightweight transformations,
+and visualize results.
+
+### 5.1 Retrieve FX data
+
+We begin by retrieving a daily USD/CAD exchange rate series.
+
+```r
+fx <- boc_series("FXUSDCAD", start_date = "2023-01-01")
+head(fx)
+```
+
+### 5.2 Compute daily log returns
+
+Risk metrics are typically computed on returns rather than price levels.
+Here we compute daily log returns using the built-in helper.
+
+```r
+fx_ret <- boc_percent_change(
+  data      = fx,
+  value_col = "value",
+  type      = "log",
+  order_col = "date",
+  group_col = "series",
+  new_col   = "log_ret"
+)
+
+ret <- fx_ret$log_ret
+ret <- ret[is.finite(ret)]
+length(ret)
+```
+
+### 5.3 Visualize VaR and CVaR
+
+The historical Value-at-Risk (VaR) and Conditional VaR (CVaR) can be
+computed and visualized directly from the return vector.
+
+```r
+vis <- risk_plot_var_cvar(ret, alpha = 0.05)
+vis$plot
+```
+
+This plot shows the empirical return distribution with VaR and CVaR
+overlaid as reference lines, highlighting downside tail risk.
+
+## 6. Documentation
+
+The package includes comprehensive documentation to support reproducible
+and applied workflows.
+
+Documentation resources include:
+
+- **Function reference** generated via *roxygen2*, providing detailed
+  descriptions of arguments, return values, and examples for all exported
+  functions.
+- **Vignettes** demonstrating complete workflows, including:
+  - Data retrieval from the Bank of Canada Valet API
+  - Data preprocessing and summarization
+  - Time-series visualization and risk analysis
+
+To explore the available vignettes, run:
+
+```r
+browseVignettes("bocvaletR")
+```
+
+## 7. Testing and Reliability
+
+bocvaletR includes a comprehensive automated test suite to ensure
+correctness, robustness, and long-term maintainability.
+
+The testing strategy is built around **testthat** and **httptest2** and
+includes:
+
+- Mocked API responses to ensure tests are fast, reproducible, and
+  independent of external network conditions
+- Unit tests covering data retrieval, input validation, and error
+  handling
+- Explicit tests for known edge cases in Valet API behavior
+- Continuous integration checks to prevent regressions as the codebase
+  evolves
 
 ---
 
-## 5. Technology Stack
+## 8. Project Status
 
-The package will be implemented using modern R tooling:
+This package was developed as part of an academic software engineering
+and financial visualization project and is actively maintained.
 
-| Component | Purpose |
-|-----------|---------|
-| **httr2** | HTTP requests and API handling |
-| **dplyr, tibble** | Data manipulation |
-| **ggplot2** | Visualization |
-| **rlang** | Structured error handling |
-| **roxygen2** | Documentation generation |
-| **testthat** | Unit testing |
-| **httptest2** | Mocking HTTP responses |
+Bug reports, feature requests, and contributions are welcome through the
+project repository.
 
 ---
 
-## 6. Documentation Plan
+## 9. License
 
-Documentation is a core component of the project and will include:
-
-### 6.1 README
-- Installation instructions
-- Quick-start examples
-- Overview of key differences from existing Valet API packages
-
-### 6.2 Function Documentation
-- Full roxygen2 documentation for all exported functions
-- Executable examples demonstrating typical workflows
-
-### 6.3 Vignettes
-- **Basic Usage** – Accessing series and groups with tidy outputs
-- **Advanced Workflows** – Reliable filtering, batch queries, and caching
-- **Applied Example** – A reproducible economic analysis using real data
-
----
-
-## 7. Testing Strategy
-
-The package will include a comprehensive test suite:
-
-- Unit tests for data retrieval, parsing, and validation
-- Mocked API responses to ensure tests are fast and reproducible
-- Explicit tests for known API edge cases (e.g., group date filtering)
-- Target coverage of at least 80%
-
-This strategy ensures correctness, robustness, and maintainability.
-
----
-
-## 8. Expected Outcomes
-
-By the end of the project, the team will deliver:
-
-- A working R package that improves upon existing Bank of Canada Valet API wrappers
-- Reliable, tidy, and analysis-ready data access tools
-- Clear documentation and applied examples demonstrating real-world usage
-
-The project will demonstrate strong software engineering practices while addressing a real need in the R ecosystem.
-
----
-
-## 9. Conclusion
-
-Although R packages for accessing the Bank of Canada Valet API already exist, they focus primarily on basic data retrieval. bocvaletR addresses this gap by emphasizing reliability, workflow integration, and analysis-ready tooling. By extending existing approaches rather than duplicating them, the project delivers practical value while remaining well-scoped for a course-based software development project.
+This project is licensed under the **MIT License**.
