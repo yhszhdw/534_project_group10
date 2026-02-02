@@ -3,7 +3,7 @@ title: "Data Retrieval with bocvaletR"
 output:
   rmarkdown::html_vignette:
     toc: true
-    toc_depth: 2
+    toc_depth: 4
 vignette: >
   %\VignetteIndexEntry{Data Process and Summary with bocvaletR}
   %\VignetteEncoding{UTF-8}
