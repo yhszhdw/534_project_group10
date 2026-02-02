@@ -1,68 +1,163 @@
 ---
-title: "Inara – Development Log (since 2026-01-20)"
+title: "Inara - Development Log (since 2026-01-20)"
 author: "Inara"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output: html_document
 ---
 
-## How this log is built
-- Focused only on my work (`bocvaletR/R/boc_utils.R`) plus team commits for context.
-- Visualization and vignette commits are team work, not mine.
-- Days marked "worked locally" = VS Code work without pushing.
+## Project focus
+- Personal scope: `boc_utils` data-quality helpers, FX close alignment, risk metrics/plots, and the visualization vignette.
+- Stack: R, testthat, ggplot2, dplyr, lubridate.
+- Log covers **only my work**; team commits are intentionally omitted.
+- Structure mirrors teammates' devlogs: reverse-chronological entries with commit IDs, work notes, outcomes, and impact.
+
+## Validation & next steps
+- Last validation: `devtools::test()` on `boc_utils` (2026-02-02) — all tests pass; runtime ~3s, no skips.
+- Knit check: `bocvaletR-data-visualization.Rmd` renders locally (2026-02-02) using html_vignette defaults.
+- Upcoming: run full `devtools::check()` before any CRAN-style resubmission; add one example to `risk_plot_var_cvar()` Rd linking to the vignette.
 
 ## Timeline
 
-### 2026-01-30 (Friday)
-- Worked locally on `bocvaletR/R/boc_utils.R`: added validation helpers, `safe_exec` error wrapping, and `boc_align_fx_close()` to bucket FX/IR timestamps by a consistent close time; quick smoke checks in VS Code; not committed/pushed.
+### 2026-02-02 - Visualization vignette
+#### Commits
+- `a0efb3f` updated and added `bocvaletR/vignettes/bocvaletR-data-visualization.Rmd`.
 
-### 2026-01-29 (Thursday) — team pushes (not mine)
-- d9447f8 Add end-to-end vignette, risk visualization, and tests
-- 067efbc debugging
-- 9931652 updating api request
-- (origin/main ahead by 2: bfcd07f merge, 6008b21 commit — not pulled locally)
+#### Work completed
+- Authored a full vignette walking through `boc_plot()` usage for single and multi-series data (concat tibble vs named list).
+- Documented plotting modes (`auto`, `overlay`, `facet`, `separate`) plus label/legend controls, legend toggles, and missing-value handling hooks.
+- Added end-to-end examples for FX series retrieval with `boc_series()`, including `concat = FALSE` flows that return a named list.
+- Wrote a short risk section that reuses `risk_plot_var_cvar()` and shows how to layer titles/labels for publishable figures.
+- Ensured the vignette keeps HTML_vignette defaults (toc + depth 4) and uses inline code chunks to stay runnable without pre-built artifacts.
 
-### 2026-01-28 (Wednesday)
-- Worked locally in VS Code: re-read boc_utils tests and sketched edge-case handling notes; no commits/pushes.
+#### Notes
+- Kept plot styling minimal (theme_minimal, steelblue/darkred) to align with CRAN-friendly defaults while remaining editable by users.
+- Avoided embedding images in git; plots are generated on render to keep repo clean.
+- Local knit check: verified chunk order, code fences, and section anchors render correctly in VS Code preview.
 
-### 2026-01-27 (Tuesday) — team pushes (not mine)
-- 7107bfa adding all api tests
-- f750e86 new test file
-- eeea3a8 confirming test run
-- 5a70145 testing test
-- 49b4c0b documentation
-- 251b6a8 debugging
-- 7cf485e debugging
-- 183ffec changing license
-- 3519c86 Update boc_risk_visual.R
-- 34f8e4f Update DESCRIPTION
-- 2cc29d3 Update DESCRIPTION
-- 1671354 Merge branch 'main'
-- af0fab5 debug
-- 69f2773 Update R-CMD-check.yaml
-- f702c16 Update R-CMD-check.yaml
+#### Outcome
+- Visualization layer now has user-facing guidance that is publish-ready.
 
-### 2026-01-26 (Monday) — team pushes (not mine)
-- aacffdc Create DEVLOG_Zihao_Sheng.md
-- 3bf91d6 adding CI
-- c170d77 Adding exception handlers
+#### Classification
+- Type: Documentation / Examples  
+- Stage: Feature completion  
+- Impact: High
 
-### 2026-01-25 (Sunday)
-- Worked locally: manual NA-handling spot checks in boc_utils; nothing committed/pushed.
+---
 
-### 2026-01-24 (Saturday) — team push (not mine)
-- 94eebb9 added 4.3 part of boc_utils.R
+### 2026-01-31 - boc_utils regression tests
+#### Commits
+- `5aad9e7` test: fix `boc_utils` and add unit tests.
 
-### 2026-01-23 (Friday) — team pushes (not mine)
-- 060bd1d Finalize FX VaR/CVaR analysis and visualization
-- 87d62c7 Update TUTORIAL.md
-- d3ec151 Create TUTORIAL.md
-- 4229c6a data retrival functions
+#### Work completed
+- Added `tests/testthat/test-boc-utils.R` covering: validation helpers, `safe_exec`, FX close alignment, normalization modes, missing-value filling, summary stats, percent change, rolling mean, autocorrelation, and pairwise correlations.
+- Structured tests by feature block with descriptive contexts to make future failures actionable.
+- Added negative-path assertions (bad types, missing columns, invalid windows/periods) to harden error messaging.
+- Tweaked `boc_utils.R` for edge cases surfaced by tests (e.g., single-value windows, non-numeric columns, insufficient non-NA points).
 
-### 2026-01-22 (Thursday)
-- Worked locally: skimmed dplyr docs for grouped mutate pitfalls; no commits/pushes.
+#### Outcome
+- Established a regression harness for all utility functions, protecting later refactors.
 
-### 2026-01-21 (Wednesday)
-- Worked locally: explored sample time-series to see normalization behavior; no commits/pushes.
+#### Notes
+- Synthetic fixtures keep tests deterministic (e.g., controlled POSIXct examples for FX close alignment).
+- Tests are pure-R (no network) so they remain fast and CI-safe.
 
-### 2026-01-20 (Tuesday)
-- Started working in VS Code; no commits/pushes (log start date).
+#### Classification
+- Type: Testing / Hardening  
+- Stage: Stabilization  
+- Impact: High
+
+---
+
+### 2026-01-30 - Risk metrics and visuals
+#### Commits
+- `37029ab` change summary: add `risk_var_cvar` function and related documentation.
+
+#### Work completed
+- Implemented `risk_var_cvar()` (historical VaR/CVaR with strict validation on `x`, `alpha`, and minimum sample size).
+- Added `risk_plot_var_cvar()` (histogram + density with VaR/CVaR markers and tail rug) and `risk_text_summary()` helper.
+- Registered functions in `NAMESPACE`, added Rd docs and sample plot asset, and wired them into the full demo vignette.
+- Chose dashed red for VaR and solid dark red for CVaR to make risk thresholds visually distinct.
+- Guarded against degenerate inputs (all NA, non-numeric, or alpha outside (0,1)) to prevent silent misreports.
+
+#### Outcome
+- Package now exposes reusable risk analytics and matching visual outputs for FX return series.
+
+#### Notes
+- Plot scales use relative frequency (not counts) to keep visuals comparable across sample sizes.
+- Left tail rug is limited to `ret <= VaR` to focus interpretation on exceedance events.
+
+#### Classification
+- Type: Feature development  
+- Stage: Feature completion  
+- Impact: High
+
+---
+
+### 2026-01-29 - Data-quality utilities and documentation
+#### Commits
+- `64e09f9` added exception for bocvaletR directory for `boc_utils`.
+
+#### Work completed
+- Expanded `boc_utils.R` with validation helpers, `safe_exec`, missing-value fillers (LOCF/NOCB/linear), normalization (`zscore`/`minmax`/`index`), percent-change and rolling-mean calculators, autocorrelation/correlation tables, grouped summaries, and FX close alignment.
+- Added roxygen docs (e.g., `boc_align_fx_close.Rd`), updated `NAMESPACE`, `.Rbuildignore`, `DESCRIPTION`, `README`, and `zzz.R` to expose the new utilities.
+- Created this devlog file to track my contributions going forward.
+- Time-zone handling: `boc_align_fx_close()` now coerces character timestamps via `input_tz`, then buckets by `cutoff_hour/min` in `cutoff_tz` using `lubridate::with_tz`.
+- Normalization functions use per-series grouping; index mode leverages `first_non_na()` to set a stable base even with leading NAs.
+
+#### Outcome
+- Robust time-series utility layer in place to support downstream risk and visualization work.
+
+#### Notes
+- Error messages routed through `rlang::abort()` for consistent, user-friendly output.
+- Added `.Rbuildignore` entry to prevent dev-only artifacts from leaking into builds.
+
+#### Classification
+- Type: Feature development / Documentation  
+- Stage: In progress  
+- Impact: High
+
+---
+
+### 2026-01-24 - Initial boc_utils build
+#### Commits
+- `94eebb9` added 4.3 part of `boc_utils.R`.
+
+#### Work completed
+- Bootstrapped the initial set of time-series helpers: first non-missing value detection, LOCF/NOCB filling, linear interpolation, and early validation scaffolding for numeric series.
+- Established helper layout and naming conventions that later functions reuse (validate_* + fill_* + summarize_* pattern).
+
+#### Outcome
+- Established the baseline structure for later data-quality and alignment functions.
+
+#### Notes
+- Focused on clear, side-effect-free helpers to keep later unit testing straightforward.
+
+#### Classification
+- Type: Feature development  
+- Stage: Initial implementation  
+- Impact: Medium
+
+---
+
+### 2026-01-22 to 2026-01-23 - Local research (no commits)
+#### Work completed
+- Reviewed dplyr grouped-mutate behaviors and common NA pitfalls for time-series data.
+- Explored sample FX series to test normalization and date alignment ideas prior to coding.
+- Compared LOCF vs linear interpolation trade-offs for sparse FX series; chose to ship all three methods with explicit semantics.
+- Sketched expected outputs for autocorr/correlation helpers to ensure consistent column naming (`series`, `lag`, `acf`).
+
+#### Outcome
+- Informed the design of `boc_align_fx_close`, normalization choices, and missing-data strategies.
+
+#### Notes
+- Decided to keep functions data.frame/tibble-friendly instead of requiring ts/xts to minimize dependencies.
+
+---
+
+### 2026-01-20 - Project onboarding
+#### Work completed
+- Set up VS Code environment and began scoping `boc_utils` requirements for the Valet API workflows.
+- Drafted a minimal checklist for utilities needed by downstream plotting and risk analysis (fill, normalize, percent change, rolling stats).
+
+#### Notes
+- Confirmed Bank of Canada Valet API series IDs and time-zone conventions to avoid later surprises in FX alignment.
