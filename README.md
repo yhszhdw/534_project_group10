@@ -3,7 +3,7 @@
 ## Code of Conduct
 
 This project adheres to a Code of Conduct. By participating, you are expected to uphold these standards.
-See [CODE_OF_CONDUCT.md](inst/CODE_OF_CONDUCT.md) for details.
+See [CODE_OF_CONDUCT.md](/bocvaletR/inst/CODE_OF_CONDUCT.md) for details.
 
 ---
 
