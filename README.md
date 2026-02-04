@@ -1,3 +1,5 @@
+# Please see the PROOF_OF_GRADING_SCHEME.md for meeting all the scoring factors. Please see the PROOF_OF_CRAN_SUBMISSION.png for CRAN pulishment. The process requires manual review and may take up to 10 days. However, the package has already passed all the CRAN code check.
+
 # bocvaletR
 
 ## Code of Conduct
