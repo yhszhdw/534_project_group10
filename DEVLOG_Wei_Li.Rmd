@@ -77,8 +77,7 @@ This design aligns with good API-wrapping practices and keeps analytical code cl
 
 ### Evidence
 
--   Commit introducing and refining `boc_series()` for FX data:\
-    <https://github.com/yhszhdw/534_project_group10/commit/5b0602aaf794d8e76f26f83583ae5dde5d612152>
+-   Commit introducing and refining `boc_series()` for FX [[data:\\\\](data:){.uri}](%5Bdata:%5D(data:)%7B.uri%7D){.uri} <https://github.com/yhszhdw/534_project_group10/commit/5b0602aaf794d8e76f26f83583ae5dde5d612152>
 
 ------------------------------------------------------------------------
 
@@ -118,3 +117,224 @@ My work emphasizes:
 -   Clear documentation of development decisions
 
 ------------------------------------------------------------------------
+
+# January 27 -31
+
+# — Test Completion and CI Stabilization
+
+## Focus
+
+**Production-grade reliability for all API-facing components**
+
+Today’s work represents a transition from feature development to **software engineering hardening**.\
+The primary objective was to ensure that all API-related functionality in the project is:
+
+-   Correct under normal conditions\
+-   Robust to edge cases and failures\
+-   Automatically validated through continuous integration
+
+This step is critical for transforming the project from a working prototype into a **maintainable and trustworthy analytical tool**.
+
+------------------------------------------------------------------------
+
+## Work Completed
+
+### 1. Comprehensive Unit Testing for API Functions
+
+I completed and finalized the full `testthat` unit test suite for **all API-facing functions**, with particular emphasis on realistic failure modes.
+
+Key aspects:
+
+-   Implemented tests covering:
+    -   Successful API responses
+    -   Empty or partially missing payloads
+    -   Malformed responses and unexpected structures
+    -   Network and request-level failures
+-   Ensured **consistent use of mocked HTTP requests**, allowing tests to be:
+    -   Deterministic
+    -   Fast
+    -   Independent of live external services
+
+This guarantees that analytical correctness does not depend on external API availability.
+
+------------------------------------------------------------------------
+
+### 2. CI Debugging and Environment Stabilization
+
+I resolved multiple CI-related issues that caused discrepancies between local development and the GitHub Actions environment.
+
+Key fixes included:
+
+-   Explicitly declaring missing package dependencies required during testing
+-   Aligning the CI R version and package installation order with the local setup
+-   Fixing environment-specific test failures related to HTTP mocking and temporary file handling
+
+As a result:
+
+-   `R CMD check` now runs successfully in CI
+-   All tests pass consistently on both **local machines and remote CI runners**
+
+------------------------------------------------------------------------
+
+### 3. Verification of End-to-End Reliability
+
+After stabilizing CI, I validated that:
+
+-   All API-related test files execute without warnings or errors
+-   The package builds cleanly under automated checks
+-   Test coverage remains high while preserving readability and maintainability
+
+This confirms that the project is now protected against **regressions introduced by future changes**.
+
+------------------------------------------------------------------------
+
+## Key Development Decisions
+
+### Why prioritize testing and CI at this stage?
+
+At this point in the project lifecycle, adding new features would have yielded diminishing returns.\
+Instead, I deliberately focused on **engineering rigor**, because:
+
+-   API instability is the single largest risk factor in data-driven applications
+-   Silent failures are more dangerous than explicit errors
+-   Automated testing and CI provide long-term protection with minimal maintenance cost
+
+By investing effort here, the project becomes safer for collaboration and future extension.
+
+------------------------------------------------------------------------
+
+## Evidence (GitHub)
+
+-   Commit completing API tests and stabilizing CI workflow:\
+    [https://github.com/yhszhdw/534_project_group10/commit/](https://github.com/yhszhdw/534_project_group10/commit/REPLACE_WITH_COMMIT_HASH){.uri}[d9447f8e9156e9548cf8c122a419db10681fb9e2](https://github.com/yhszhdw/534_project_group10/commit/d9447f8e9156e9548cf8c122a419db10681fb9e2)
+
+------------------------------------------------------------------------
+
+## Impact on the Overall Project
+
+This work significantly improves the **technical maturity** of the group project:
+
+-   API functionality is now formally verified rather than assumed
+-   CI ensures continuous validation on every push and pull request
+-   Future contributors can modify code with confidence, supported by automated safeguards
+
+In practical terms, this establishes a **professional software engineering baseline** for the project, bringing it closer to real-world research and industry standards.
+
+------------------------------------------------------------------------
+
+## Reflection
+
+Today’s work reinforces an important principle:
+
+> *Correctness is not enough — reliability must be engineered.*
+
+By completing the testing and CI infrastructure, I ensured that the analytical insights produced by this project rest on a stable and reproducible foundation.
+
+------------------------------------------------------------------------
+
+## January 31 – Presentation Preparation and Communication of Results
+
+## Focus
+
+**Translating technical work into clear and effective communication**
+
+After completing the core analysis, testing, and CI stabilization, my focus shifted to preparing a concise and professional **presentation video** that clearly communicates both the *methodology* and the *key insights* of my individual contribution.
+
+This step is essential because a technically correct analysis only becomes valuable when it can be **understood and evaluated by others**.
+
+------------------------------------------------------------------------
+
+## Work Completed
+
+### 1. Structuring the Presentation Narrative
+
+I designed the presentation to follow a clear analytical storyline:
+
+1.  **Problem context**
+    -   Why FX risk matters\
+    -   Why USD/CAD is a relevant and interpretable example
+2.  **Data and methodology**
+    -   Official Bank of Canada API as a reliable data source\
+    -   Transformation from price levels to daily log returns
+3.  **Risk metrics and interpretation**
+    -   Historical VaR as a tail threshold\
+    -   CVaR as a measure of tail severity
+4.  **Visualization and design rationale**
+    -   How visual choices support financial interpretation rather than decoration
+
+This structure ensures that each slide contributes directly to the analytical message without unnecessary detail.
+
+------------------------------------------------------------------------
+
+### 2. Presentation Video Recording
+
+I recorded a short presentation video explaining my FX risk analysis and visualization.
+
+Key aspects of the recording:
+
+-   Focused on **conceptual clarity** rather than code walkthroughs
+-   Explicitly explained the economic meaning of:
+    -   VaR vs. CVaR\
+    -   Tail risk in empirical return distributions
+-   Used the visualization to guide the explanation, highlighting:
+    -   VaR and CVaR reference lines\
+    -   Tail observations represented by rug plots
+
+The presentation was intentionally kept concise, with each slide designed to be explained in **approximately 40 seconds**, in line with academic presentation standards.
+
+------------------------------------------------------------------------
+
+### 3. Alignment with DATA 550 Visualization Principles
+
+During preparation, I deliberately reviewed my visual design choices to ensure alignment with DATA 550 principles:
+
+-   Avoided misleading shaded areas that may imply probability mass
+-   Used relative frequency instead of density for histograms
+-   Separated *distribution shape* (density curve) from *risk thresholds* (VaR / CVaR)
+-   Ensured that every visual element has a clear analytical role
+
+This reinforces that the visualization is not merely illustrative, but analytically justified.
+
+------------------------------------------------------------------------
+
+## Key Development Decision
+
+Rather than overloading the presentation with multiple metrics or alternative models, I chose to:
+
+-   Focus on **one clean FX example**
+-   Explain **one coherent risk framework**
+-   Emphasize **interpretability and communication quality**
+
+This decision improves audience comprehension and highlights depth of understanding over breadth.
+
+------------------------------------------------------------------------
+
+## Evidence
+
+-   GitHub repository containing all code, tests, and visualization assets:\
+    <https://github.com/yhszhdw/534_project_group10>
+
+-   FX risk visualization and analysis used in the presentation:\
+    <https://github.com/yhszhdw/534_project_group10/commit/060bd1d56c0c80fff88ba0e3cec56f64cfc9c4d1>
+
+------------------------------------------------------------------------
+
+## Impact on the Overall Project
+
+By preparing and recording the presentation, I ensured that:
+
+-   My individual contribution is **clearly documented and communicable**
+-   Analytical choices are **defensible and transparent**
+-   The project output is suitable for both academic evaluation and real-world discussion
+
+This step bridges the gap between **analysis**, **software engineering**, and **professional communication**.
+
+------------------------------------------------------------------------
+
+## Reflection
+
+Preparing the presentation reinforced a key lesson:
+
+> *A good analysis solves a problem; a great analysis explains it clearly.*
+
+This final step completes my individual contribution by demonstrating not only technical competence, but also the ability to communicate complex financial risk concepts effectively.
